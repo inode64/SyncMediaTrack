@@ -1,0 +1,35 @@
+
+linters:
+  enable:
+  - whitespace
+  - gosec
+  - gci
+  - gofmt
+  - goimports
+  - revive
+  - nilerr
+  - nestif
+  - goconst
+  - asasalint
+  - bodyclose
+  - dupl
+  - durationcheck
+  - errname
+  - goconst
+  - godox
+  - gofumpt
+  - importas
+  - unconvert
+  - unparam
+linter-settings:
+  gofumpt:
+    extra-rules: true
+  nestif:
+    min-complexity: 20
+    complexity: 60
+  gosec:
+    excludes:
+      - G107
+config:
+  global:
+    nosec: false
