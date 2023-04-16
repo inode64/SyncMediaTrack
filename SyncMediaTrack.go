@@ -15,12 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	dryRun   bool
-	mediaDir string
-	track    string
-)
-
 type Gpx struct {
 	XMLName xml.Name `xml:"gpx"`
 	Trk     Trk      `xml:"trk"`
@@ -41,6 +35,14 @@ type Trkpt struct {
 	Ele  int64   `xml:"ele"`
 }
 
+var (
+	dryRun   bool
+	mediaDir string
+	track    string
+	trackDir string
+	dataGPX  []Gpx
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "SyncMediaTack",
 	Short: "Synchronize Media Data from track GPX",
@@ -53,26 +55,27 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var colorRed = color.New(color.FgRed).SprintFunc()
+
 func init() {
 	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track")
+	rootCmd.PersistentFlags().StringVar(&trackDir, "trackdir", "", "Directory of GPX tracks")
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Performs the actions without writing to the files")
-	err := rootCmd.MarkPersistentFlagRequired("track")
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
-func readGPX() Gpx {
-	mtype, err := mimetype.DetectFile(track)
+func readGPX(filename string) {
+	fmt.Printf("Processing: %v \n", filename)
+
+	mtype, err := mimetype.DetectFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if !mtype.Is("application/gpx+xml") {
-		log.Fatal(fmt.Errorf("File %s isn't valid GPX file", track))
+		return
 	}
 
-	file, err := os.Open(track)
+	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -82,11 +85,29 @@ func readGPX() Gpx {
 	gpx := Gpx{}
 	decoder := xml.NewDecoder(file)
 	if err := decoder.Decode(&gpx); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		color.Yellow("Warning: GPX file could not be processed")
+		return
 	}
 
-	return gpx
+	dataGPX = append(dataGPX, gpx)
+}
+
+func readGPXDir() {
+	err := godirwalk.Walk(trackDir, &godirwalk.Options{
+		Callback: func(path string, de *godirwalk.Dirent) error {
+			if de.IsDir() {
+				return nil // do not remove directory that was provided top-level directory
+			}
+
+			readGPX(path)
+
+			return nil
+		},
+		Unsorted: true,
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func GetMediaDate(filename string) (time.Time, error) {
@@ -124,29 +145,31 @@ func GetMediaDate(filename string) (time.Time, error) {
 	return t.ModTime(), err
 }
 
-func GetClosesGPS(gpx Gpx, imageTime time.Time) (Trkpt, error) {
+func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 	var closestPoint Trkpt
 	var closestDuration time.Duration
 
-	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
-		trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
-		if err != nil {
-			log.Fatal(err)
+	for _, gpx := range dataGPX {
+		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
+			trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			duration := imageTime.Sub(trkptTime.UTC())
+			if duration < 0 {
+				duration = -duration
+			}
+
+			if closestDuration == 0 || duration < closestDuration {
+				closestPoint = trkpt
+				closestDuration = duration
+			}
 		}
 
-		duration := imageTime.Sub(trkptTime.UTC())
-		if duration < 0 {
-			duration = -duration
+		if closestDuration.Seconds() > 30 {
+			return closestPoint, fmt.Errorf("There is no close time to obtain the GPS position")
 		}
-
-		if closestDuration == 0 || duration < closestDuration {
-			closestPoint = trkpt
-			closestDuration = duration
-		}
-	}
-
-	if closestDuration.Seconds() > 30 {
-		return closestPoint, fmt.Errorf("There is no close time to obtain the GPS position")
 	}
 
 	return closestPoint, nil
@@ -216,9 +239,16 @@ func fileIsMedia(filename string) bool {
 func main() {
 	cobra.CheckErr(rootCmd.Execute())
 
-	gpx := readGPX()
+	if len(track) != 0 {
+		readGPX(track)
+	}
+	if len(trackDir) != 0 {
+		readGPXDir()
+	}
 
-	red := color.New(color.FgRed).SprintFunc()
+	if len(dataGPX) == 0 {
+		log.Fatal(fmt.Errorf("No valid GPX files"))
+	}
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
@@ -242,9 +272,9 @@ func main() {
 				return nil
 			}
 
-			location, err := GetClosesGPS(gpx, date)
+			location, err := GetClosesGPS(date)
 			if err != nil {
-				fmt.Println(red(err))
+				fmt.Println(colorRed(err))
 				return nil
 			}
 
