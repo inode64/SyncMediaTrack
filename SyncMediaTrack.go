@@ -63,6 +63,15 @@ func init() {
 }
 
 func readGPX() Gpx {
+	mtype, err := mimetype.DetectFile(track)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !mtype.Is("application/gpx+xml") {
+		log.Fatal(fmt.Errorf("File %s isn't valid GPX file", track))
+	}
+
 	file, err := os.Open(track)
 	if err != nil {
 		fmt.Println(err)
