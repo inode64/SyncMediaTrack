@@ -202,12 +202,21 @@ func WriteGPS(gps Trkpt, filename string) error {
 	return nil
 }
 
+func fileIsMedia(filename string) bool {
+	allowed := []string{"image/jpeg", "video/mp4"}
+
+	mtype, err := mimetype.DetectFile(filename)
+	if err != nil {
+		return false
+	}
+
+	return mimetype.EqualsAny(mtype.String(), allowed...)
+}
+
 func main() {
 	cobra.CheckErr(rootCmd.Execute())
 
 	gpx := readGPX()
-
-	allowed := []string{"image/jpeg", "video/mp4"}
 
 	red := color.New(color.FgRed).SprintFunc()
 
@@ -217,42 +226,38 @@ func main() {
 				return nil // do not remove directory that was provided top-level directory
 			}
 
-			mtype, err := mimetype.DetectFile(path)
-			if err != nil {
-				log.Fatal(err)
-				return err
+			if !fileIsMedia(path) {
+				return nil
 			}
 
-			if mimetype.EqualsAny(mtype.String(), allowed...) {
-				relPath, err := filepath.Rel(mediaDir, path)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("[%v] - ", relPath)
+			relPath, err := filepath.Rel(mediaDir, path)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("[%v] - ", relPath)
 
-				date, err := GetMediaDate(path)
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
+			date, err := GetMediaDate(path)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
 
-				location, err := GetClosesGPS(gpx, date)
-				if err != nil {
-					fmt.Println(red(err))
-					return nil
-				}
+			location, err := GetClosesGPS(gpx, date)
+			if err != nil {
+				fmt.Println(red(err))
+				return nil
+			}
 
-				fmt.Printf("Lat %v Lon %v Ele %v\n", location.Lat, location.Lon, location.Ele)
+			fmt.Printf("Lat %v Lon %v Ele %v\n", location.Lat, location.Lon, location.Ele)
 
-				if dryRun {
-					return nil
-				}
+			if dryRun {
+				return nil
+			}
 
-				err = WriteGPS(location, path)
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
+			err = WriteGPS(location, path)
+			if err != nil {
+				fmt.Println(err)
+				return nil
 			}
 
 			return nil
