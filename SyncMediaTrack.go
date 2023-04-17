@@ -111,18 +111,20 @@ func readGPXDir() {
 }
 
 func GetMediaDate(filename string) (time.Time, error) {
+	f, err := os.Stat(filename)
+	if err != nil {
+		return nil, err
+	}
+	t := f.ModTime()
+
 	// create an instance of exiftool
 	et, err := exiftool.NewExiftool()
 	if err != nil {
-		return time.Time{}, err
+		return t, err
 	}
 	defer et.Close()
 
 	metas := et.ExtractMetadata(filename)
-	t, err := os.Stat(filename)
-	if err != nil {
-		return t.ModTime(), err
-	}
 
 	// define the list of possible tags to extract date from
 	dateTags := []string{"DateTimeOriginal", "DateTime", "DateTimeDigitized"}
@@ -142,7 +144,7 @@ func GetMediaDate(filename string) (time.Time, error) {
 		}
 	}
 
-	return t.ModTime(), err
+	return t, err
 }
 
 func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
