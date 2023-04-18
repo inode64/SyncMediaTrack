@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -171,7 +172,7 @@ func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 		}
 
 		if closestDuration.Seconds() > 30 {
-			return closestPoint, fmt.Errorf("There is no close time to obtain the GPS position")
+			return closestPoint, errors.New("There is no close time to obtain the GPS position")
 		}
 	}
 
@@ -250,7 +251,7 @@ func main() {
 	}
 
 	if len(dataGPX) == 0 {
-		log.Fatal(fmt.Errorf("No valid GPX files"))
+		log.Fatal("No valid GPX files")
 	}
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
