@@ -110,17 +110,17 @@ func readGPXDir() {
 	}
 }
 
-func GetMediaDate(filename string) (time.Time, error) {
+func GetMediaDate(filename string, t *time.Time) error {
 	f, err := os.Stat(filename)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	t := f.ModTime()
+	*t = f.ModTime()
 
 	// create an instance of exiftool
 	et, err := exiftool.NewExiftool()
 	if err != nil {
-		return t, err
+		return err
 	}
 	defer et.Close()
 
@@ -140,11 +140,12 @@ func GetMediaDate(filename string) (time.Time, error) {
 			if err != nil {
 				continue
 			}
-			return date, nil
+			*t = date
+			return nil
 		}
 	}
 
-	return t, err
+	return nil
 }
 
 func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
@@ -254,6 +255,8 @@ func main() {
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
+			var date time.Time
+
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
 			}
@@ -268,7 +271,7 @@ func main() {
 			}
 			fmt.Printf("[%v] - ", relPath)
 
-			date, err := GetMediaDate(path)
+			err = GetMediaDate(path, &date)
 			if err != nil {
 				fmt.Println(err)
 				return nil
