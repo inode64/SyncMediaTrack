@@ -44,6 +44,9 @@ var (
 	track    string
 	dataGPX  []Gpx
 	force    bool
+
+	colorRed    = color.New(color.FgRed).SprintFunc()
+	colorYellow = color.New(color.FgYellow).SprintFunc()
 )
 
 var rootCmd = &cobra.Command{
@@ -57,8 +60,6 @@ var rootCmd = &cobra.Command{
 		}
 	},
 }
-
-var colorRed = color.New(color.FgRed).SprintFunc()
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
@@ -88,7 +89,7 @@ func readGPX(filename string) {
 	gpx := Gpx{}
 	decoder := xml.NewDecoder(file)
 	if err := decoder.Decode(&gpx); err != nil {
-		color.Yellow("Warning: GPX file could not be processed")
+		fmt.Println(colorYellow("Warning: GPX file could not be processed, error: ", colorRed(err)))
 		return
 	}
 
