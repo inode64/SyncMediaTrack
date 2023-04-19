@@ -314,7 +314,7 @@ func main() {
 
 			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
-				fmt.Printf(" * no update\n")
+				color.Yellow("(no update)")
 				return nil
 			}
 
