@@ -42,7 +42,6 @@ var (
 	dryRun   bool
 	mediaDir string
 	track    string
-	trackDir string
 	dataGPX  []Gpx
 	force    bool
 )
@@ -62,8 +61,7 @@ var rootCmd = &cobra.Command{
 var colorRed = color.New(color.FgRed).SprintFunc()
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track")
-	rootCmd.PersistentFlags().StringVar(&trackDir, "trackdir", "", "Directory of GPX tracks")
+	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
 	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Performs the actions without writing to the files")
 }
@@ -97,7 +95,7 @@ func readGPX(filename string) {
 	dataGPX = append(dataGPX, gpx)
 }
 
-func readGPXDir() {
+func readGPXDir(trackDir string) {
 	err := godirwalk.Walk(trackDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			if de.IsDir() {
@@ -263,18 +261,22 @@ func main() {
 
 	cobra.CheckErr(rootCmd.Execute())
 
-	if len(track) != 0 {
-		readGPX(track)
+	fileInfo, err := os.Stat(track)
+	if err != nil {
+		log.Fatal("No open GPX path")
 	}
-	if len(trackDir) != 0 {
-		readGPXDir()
+
+	if fileInfo.IsDir() {
+		readGPXDir(track)
+	} else {
+		readGPX(track)
 	}
 
 	if len(dataGPX) == 0 {
-		log.Fatal("No valid GPX files")
+		log.Fatal("There is no track processed")
 	}
 
-	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
+	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			var date time.Time
 
