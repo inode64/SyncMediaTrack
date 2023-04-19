@@ -75,7 +75,7 @@ func readGPX(filename string) {
 		log.Fatal(colorRed(err))
 	}
 
-	if !mtype.Is("application/gpx+xml") {
+	if !mtype.Is("application/gpx+xml") && !mtype.Is("text/xml") {
 		return
 	}
 
@@ -173,9 +173,13 @@ func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 
 	for _, gpx := range dataGPX {
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
+			if len(trkpt.Time) == 0 {
+				continue
+			}
 			trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
 			if err != nil {
-				log.Fatal(colorRed(err))
+				fmt.Printf(colorRed(err) + "\n")
+				continue
 			}
 
 			duration := imageTime.Sub(trkptTime.UTC())
