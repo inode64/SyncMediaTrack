@@ -221,7 +221,6 @@ func WriteGPS(gps Trkpt, filename string) error {
 	fileInfo.SetFloat("GPSLatitude", gps.Lat)
 	fileInfo.SetFloat("GPSLongitude", gps.Lon)
 	fileInfo.SetInt("GPSAltitude", gps.Ele)
-	fileInfo.SetString("GPSAltitude", gps.Time)
 	fileInfo.SetString("GPSAltitudeRef", "above sea level")
 
 	fileInfo.SetString("GPSLatitudeRef", latRef)
