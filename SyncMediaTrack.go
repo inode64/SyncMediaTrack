@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/barasher/go-exiftool"
+	"github.com/codingsince1985/geo-golang/openstreetmap"
 	"github.com/fatih/color"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/karrick/godirwalk"
@@ -39,12 +40,14 @@ type Trkpt struct {
 }
 
 var (
-	dryRun   bool
-	mediaDir string
-	track    string
-	dataGPX  []Gpx
-	force    bool
+	dataGPX    []Gpx
+	dryRun     bool
+	force      bool
+	geoservice bool
+	mediaDir   string
+	track      string
 
+	colorGreen  = color.New(color.FgGreen).SprintFunc()
 	colorRed    = color.New(color.FgRed).SprintFunc()
 	colorYellow = color.New(color.FgYellow).SprintFunc()
 )
@@ -62,9 +65,25 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
-	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Performs the actions without writing to the files")
+	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
+	rootCmd.PersistentFlags().BoolVar(&geoservice, "geoservice", false, "Show location from GPS position from geocoding service of openstreetmap")
+	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
+}
+
+func ReverseLocation(location Trkpt) (string, error) {
+	service := openstreetmap.Geocoder()
+
+	address, err := service.ReverseGeocode(location.Lat, location.Lon)
+	if err != nil {
+		return "", err
+	}
+
+	if len(address.City) < 9 && address.State != "" {
+		return fmt.Sprintf("%s %s %s", address.City, address.State, address.Country), nil
+	}
+
+	return fmt.Sprintf("%s %s", address.City, address.Country), nil
 }
 
 func readGPX(filename string) {
@@ -318,6 +337,13 @@ func main() {
 			}
 
 			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
+
+			if geoservice {
+				loc, _ := ReverseLocation(location)
+				if len(loc) != 0 {
+					fmt.Printf("(%s)", colorGreen(loc))
+				}
+			}
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
 				color.Yellow("(no update)")
 				return nil

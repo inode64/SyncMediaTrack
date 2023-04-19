@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/barasher/go-exiftool v1.9.0
+	github.com/codingsince1985/geo-golang v1.8.3
 	github.com/fatih/color v1.15.0
 	github.com/gabriel-vasile/mimetype v1.4.2
 	github.com/karrick/godirwalk v1.17.0
