@@ -72,7 +72,7 @@ func readGPX(filename string) {
 
 	mtype, err := mimetype.DetectFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(colorRed(err))
 	}
 
 	if !mtype.Is("application/gpx+xml") {
@@ -175,7 +175,7 @@ func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 			trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal(colorRed(err))
 			}
 
 			duration := imageTime.Sub(trkptTime.UTC())
@@ -225,7 +225,7 @@ func WriteGPS(gps Trkpt, filename string) error {
 
 	gpsTime, err := time.Parse("2006-01-02T15:04:05Z", gps.Time)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(colorRed(err))
 	}
 
 	fileInfo.SetString("GPSDateStamp", gpsTime.Format("2006:01:02"))
@@ -264,7 +264,7 @@ func main() {
 
 	fileInfo, err := os.Stat(track)
 	if err != nil {
-		log.Fatal("No open GPX path")
+		log.Fatal(colorRed("No open GPX path"))
 	}
 
 	if fileInfo.IsDir() {
@@ -274,7 +274,7 @@ func main() {
 	}
 
 	if len(dataGPX) == 0 {
-		log.Fatal("There is no track processed")
+		log.Fatal(colorRed("There is no track processed"))
 	}
 
 	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
