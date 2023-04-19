@@ -53,10 +53,11 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "SyncMediaTack",
-	Short: "Synchronize Media Data from track GPX",
-	Long:  `Using a gpx track, analyze a directory with images or movies and add the GPS positions`,
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "SyncMediaTack",
+	Short:   "Synchronize Media Data from track GPX",
+	Long:    `Using a gpx track, analyze a directory with images or movies and add the GPS positions`,
+	Args:    cobra.MinimumNArgs(1),
+	Version: "1.1",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 1 {
 			mediaDir = args[0]
