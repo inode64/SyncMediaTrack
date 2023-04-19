@@ -35,7 +35,7 @@ type Trkpt struct {
 	Lat  float64 `xml:"lat,attr"`
 	Lon  float64 `xml:"lon,attr"`
 	Time string  `xml:"time"`
-	Ele  int64   `xml:"ele"`
+	Ele  float64 `xml:"ele"`
 }
 
 var (
@@ -140,7 +140,7 @@ func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
 		if len(match) > 1 {
 			alt, err := strconv.Atoi(match[1])
 			if err == nil {
-				gps.Ele = int64(alt)
+				gps.Ele = float64(alt)
 			}
 		}
 	}
@@ -234,7 +234,7 @@ func WriteGPS(gps Trkpt, filename string) error {
 	// Update latitude, longitude, and elevation values
 	fileInfo.SetFloat("GPSLatitude", gps.Lat)
 	fileInfo.SetFloat("GPSLongitude", gps.Lon)
-	fileInfo.SetInt("GPSAltitude", gps.Ele)
+	fileInfo.SetInt("GPSAltitude", int64(gps.Ele))
 	fileInfo.SetString("GPSAltitudeRef", "above sea level")
 
 	fileInfo.SetString("GPSLatitudeRef", latRef)
