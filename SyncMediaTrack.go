@@ -111,7 +111,7 @@ func readGPXDir() {
 	}
 }
 
-func GetMediaDate(filename string, t *time.Time) error {
+func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
 	f, err := os.Stat(filename)
 	if err != nil {
 		return err
@@ -119,13 +119,17 @@ func GetMediaDate(filename string, t *time.Time) error {
 	*t = f.ModTime()
 
 	// create an instance of exiftool
-	et, err := exiftool.NewExiftool()
+	et, err := exiftool.NewExiftool(exiftool.CoordFormant("%+f"))
 	if err != nil {
 		return err
 	}
 	defer et.Close()
 
 	metas := et.ExtractMetadata(filename)
+
+	gps.Lon, _ = metas[0].GetFloat("GPSLongitude")
+	gps.Lat, _ = metas[0].GetFloat("GPSLatitude")
+	gps.Ele, _ = metas[0].GetInt("GPSAltitude")
 
 	// define the list of possible tags to extract date from
 	dateTags := []string{"DateTimeOriginal", "DateTime", "DateTimeDigitized"}
@@ -241,6 +245,8 @@ func fileIsMedia(filename string) bool {
 }
 
 func main() {
+	var gpsOld Trkpt
+
 	cobra.CheckErr(rootCmd.Execute())
 
 	if len(track) != 0 {
@@ -272,7 +278,7 @@ func main() {
 			}
 			fmt.Printf("[%v] - ", relPath)
 
-			err = GetMediaDate(path, &date)
+			err = GetMediaDate(path, &date, &gpsOld)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -284,7 +290,13 @@ func main() {
 				return nil
 			}
 
-			fmt.Printf("Lat %v Lon %v Ele %v\n", location.Lat, location.Lon, location.Ele)
+			if gpsOld.Lat == 0 && gpsOld.Lon == 0 {
+				fmt.Printf("No location")
+			} else {
+				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
+			}
+
+			fmt.Printf(" -> Lat %v Lon %v Ele %v\n", location.Lat, location.Lon, location.Ele)
 
 			if dryRun {
 				return nil
