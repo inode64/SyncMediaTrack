@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/barasher/go-exiftool"
@@ -129,7 +131,18 @@ func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
 
 	gps.Lon, _ = metas[0].GetFloat("GPSLongitude")
 	gps.Lat, _ = metas[0].GetFloat("GPSLatitude")
-	gps.Ele, _ = metas[0].GetInt("GPSAltitude")
+	EleStr, err := metas[0].GetString("GPSAltitude")
+	if err == nil {
+		re := regexp.MustCompile(`(\d+) m.*`)
+		match := re.FindStringSubmatch(EleStr)
+
+		if len(match) > 1 {
+			alt, err := strconv.Atoi(match[1])
+			if err == nil {
+				gps.Ele = int64(alt)
+			}
+		}
+	}
 
 	// define the list of possible tags to extract date from
 	dateTags := []string{"DateTimeOriginal", "DateTime", "DateTimeDigitized"}
