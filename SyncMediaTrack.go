@@ -44,6 +44,7 @@ var (
 	track    string
 	trackDir string
 	dataGPX  []Gpx
+	force    bool
 )
 
 var rootCmd = &cobra.Command{
@@ -63,6 +64,7 @@ var colorRed = color.New(color.FgRed).SprintFunc()
 func init() {
 	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track")
 	rootCmd.PersistentFlags().StringVar(&trackDir, "trackdir", "", "Directory of GPX tracks")
+	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Performs the actions without writing to the files")
 }
 
@@ -308,7 +310,13 @@ func main() {
 				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
 			}
 
-			fmt.Printf(" -> Lat %v Lon %v Ele %v\n", location.Lat, location.Lon, location.Ele)
+			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
+			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
+				fmt.Printf(" * no update\n")
+				return nil
+			}
+
+			fmt.Printf("\n")
 
 			if dryRun {
 				return nil
