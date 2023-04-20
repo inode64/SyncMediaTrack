@@ -29,10 +29,7 @@ jobs:
 
       - name: Extract version from tag
         uses: damienaicheh/extract-version-from-tag-action@v1.1.0
-  
-      - name: Install zip
-        uses: montudor/action-zip@v1
-        
+
       - name: Build SyncMediaTrack (macOS)
         if: ${{ matrix.targets.os == 'macos-latest' }}
         run: |
@@ -47,9 +44,15 @@ jobs:
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
-        run: |
-          go build -o SyncMediaTrack.exe
-          zip -qq -r SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack.exe
+        run: go build -o SyncMediaTrack.exe
+
+      - name: Install zip (Windows)
+        if: ${{ matrix.targets.os == 'windows-2022' }}
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.zip'
+          path: SyncMediaTrack.exe
 
       - name: Save Binaries
         uses: actions/upload-artifact@v3
