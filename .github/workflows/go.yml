@@ -27,11 +27,11 @@ jobs:
 
       - name: Build SyncMediaTrack (macOS)
         if: ${{ matrix.targets.os == 'macos-latest' }}
-        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
+        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack.macOS
 
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
-        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
+        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack.linux
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
@@ -41,7 +41,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: _deployment/_binaries/*.*
+          path: SyncMediaTrack.macOS
+          path: SyncMediaTrack.linux
+          path: SyncMediaTrack.exe
 
   github_release:
     name: Create GitHub release
