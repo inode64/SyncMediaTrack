@@ -54,17 +54,22 @@ jobs:
           filename: 'SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.zip'
           path: SyncMediaTrack.exe
 
-      - name: Save Binaries
+  save:
+    name: Save compress files
+    needs: build
+    steps:
+      - name: Upload compress files
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
           path: |
-            SyncMediaTrack.*.zip
-            SyncMediaTrack.*.tar.gz
-
+            SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz 
+            SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz 
+            SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.zip
+            
   github_release:
     name: Create GitHub release
-    needs: build
+    needs: save
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
