@@ -58,7 +58,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: SyncMediaTrack.*
+          path: |
+            SyncMediaTrack.*.zip
+            SyncMediaTrack.*.tar.gz
 
   github_release:
     name: Create GitHub release
