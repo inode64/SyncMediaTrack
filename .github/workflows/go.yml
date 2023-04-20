@@ -57,6 +57,7 @@ jobs:
   save:
     name: Save compress files
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Upload compress files
         uses: actions/upload-artifact@v3
