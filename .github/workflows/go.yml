@@ -59,6 +59,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+           fetch-depth: 0 # Mandatory to use the extract version from tag action
+
       - name: Extract version from tag
         uses: damienaicheh/extract-version-from-tag-action@v1.1.0
 
