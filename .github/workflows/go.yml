@@ -78,7 +78,7 @@ jobs:
             
   github_release:
     name: Create GitHub release
-    needs: save
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
