@@ -59,6 +59,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Extract version from tag
+        uses: damienaicheh/extract-version-from-tag-action@v1.1.0
+
       - name: Upload compress files
         uses: actions/upload-artifact@v3
         with:
