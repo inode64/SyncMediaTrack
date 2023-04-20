@@ -34,27 +34,27 @@ jobs:
         if: ${{ matrix.targets.os == 'macos-latest' }}
         run: |
           GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
-          tar -cf SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
+          tar -cf SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz SyncMediaTrack
 
       - name: Upload compress files
         if: ${{ matrix.targets.os == 'macos-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz
+          path: SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz
 
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
         run: |
           GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
-          tar -cf SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
+          tar -cf SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz SyncMediaTrack
 
       - name: Upload compress files
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
+          path: SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz 
             
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
@@ -65,7 +65,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          filename: 'SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip'
+          filename: 'SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.zip'
           path: SyncMediaTrack.exe
 
       - name: Upload compress files
@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip
+          path: SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.zip
 
             
   github_release:
