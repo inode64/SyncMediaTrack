@@ -34,13 +34,13 @@ jobs:
         if: ${{ matrix.targets.os == 'macos-latest' }}
         run: |
           GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
-          tar -cf SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
+          tar -cf SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
         run: |
           GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
-          tar -cf SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
+          tar -cf SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
@@ -51,7 +51,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          filename: 'SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.zip'
+          filename: 'SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip'
           path: SyncMediaTrack.exe
 
   save:
@@ -71,9 +71,9 @@ jobs:
         with:
           name: SyncMediaTrack
           path: |
-            SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz 
-            SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz 
-            SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.zip
+            SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
+            SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
+            SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip
             
   github_release:
     name: Create GitHub release
