@@ -36,12 +36,26 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
           tar -cf SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
 
+      - name: Upload compress files
+        if: ${{ matrix.targets.os == 'macos-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: SyncMediaTrack
+          path: SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz
+
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
         run: |
           GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
           tar -cf SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz SyncMediaTrack
 
+      - name: Upload compress files
+        if: ${{ matrix.targets.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: SyncMediaTrack
+          path: SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
+            
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
         run: go build -o SyncMediaTrack.exe
@@ -54,26 +68,13 @@ jobs:
           filename: 'SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip'
           path: SyncMediaTrack.exe
 
-  save:
-    name: Save compress files
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-           fetch-depth: 0 # Mandatory to use the extract version from tag action
-
-      - name: Extract version from tag
-        uses: damienaicheh/extract-version-from-tag-action@v1.1.0
-
       - name: Upload compress files
+        if: ${{ matrix.targets.os == 'windows-2022' }}
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: |
-            SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
-            SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.tar.gz 
-            SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip
+          path: SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}-${{ env.MINOR }}.zip
+
             
   github_release:
     name: Create GitHub release
