@@ -35,18 +35,21 @@ jobs:
         
       - name: Build SyncMediaTrack (macOS)
         if: ${{ matrix.targets.os == 'macos-latest' }}
-        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
-        run: tar -cf SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
+          tar -cf SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
-        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
-        run: tar -cf SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
+          tar -cf SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
-        run: go build -o SyncMediaTrack.exe
-        run: zip -qq -r SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack.exe
+        run: |
+          go build -o SyncMediaTrack.exe
+          zip -qq -r SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack.exe
 
       - name: Save Binaries
         uses: actions/upload-artifact@v3
