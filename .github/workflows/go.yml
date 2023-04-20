@@ -22,20 +22,31 @@ jobs:
     runs-on: ${{ matrix.targets.os }}
     steps:
       - uses: actions/checkout@v3
-
+        with:
+           fetch-depth: 0 # Mandatory to use the extract version from tag action
+           
       - uses: extractions/setup-just@v1
 
+      - name: Extract version from tag
+        uses: damienaicheh/extract-version-from-tag-action@v1.1.0
+  
+      - name: Install zip
+        uses: montudor/action-zip@v1
+        
       - name: Build SyncMediaTrack (macOS)
         if: ${{ matrix.targets.os == 'macos-latest' }}
-        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack.macOS
+        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
+        run: tar -cf SyncMediaTrack-macos-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Linux)
         if: ${{ matrix.targets.os == 'ubuntu-latest' }}
-        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack.linux
+        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
+        run: tar -cf SyncMediaTrack-linux-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
         run: go build -o SyncMediaTrack.exe
+        run: zip -qq -r SyncMediaTrack-windows-amd64-v$MAJOR-$MINOR.tar.gz SyncMediaTrack.exe
 
       - name: Save Binaries
         uses: actions/upload-artifact@v3
