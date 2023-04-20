@@ -35,7 +35,7 @@ jobs:
 
       - name: Build SyncMediaTrack (Windows)
         if: ${{ matrix.targets.os == 'windows-2022' }}
-        run: GOARCH=amd64 go build -o SyncMediaTrack.exe
+        run: go build -o SyncMediaTrack.exe
 
       - name: Save Binaries
         uses: actions/upload-artifact@v3
