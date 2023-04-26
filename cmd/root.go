@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/inode64/SyncMediaTrack/lib"
+	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
 	"github.com/karrick/godirwalk"
 	"github.com/spf13/cobra"
 )
 
 var (
-	dataGPX    []Gpx
+	dataGPX    []syncmediatrack.Gpx
 	dryRun     bool
 	force      bool
 	geoservice bool
@@ -43,23 +43,23 @@ func init() {
 }
 
 func Execute() {
-	var gpsOld Trkpt
+	var gpsOld syncmediatrack.Trkpt
 
 	cobra.CheckErr(rootCmd.Execute())
 
 	fileInfo, err := os.Stat(track)
 	if err != nil {
-		log.Fatal(ColorRed("No open GPX path"))
+		log.Fatal(syncmediatrack.ColorRed("No open GPX path"))
 	}
 
 	if fileInfo.IsDir() {
-		ReadGPXDir(track)
+		syncmediatrack.ReadGPXDir(track)
 	} else {
-		ReadGPX(track)
+		syncmediatrack.ReadGPX(track)
 	}
 
 	if len(dataGPX) == 0 {
-		log.Fatal(ColorRed("There is no track processed"))
+		log.Fatal(syncmediatrack.ColorRed("There is no track processed"))
 	}
 
 	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
@@ -70,7 +70,7 @@ func Execute() {
 				return nil // do not remove directory that was provided top-level directory
 			}
 
-			if !FileIsMedia(path) {
+			if !syncmediatrack.FileIsMedia(path) {
 				return nil
 			}
 
@@ -80,15 +80,15 @@ func Execute() {
 			}
 			fmt.Printf("[%v] - ", relPath)
 
-			err = GetMediaDate(path, &date, &gpsOld)
+			err = syncmediatrack.GetMediaDate(path, &date, &gpsOld)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			location, err := GetClosesGPS(date)
+			location, err := syncmediatrack.GetClosesGPS(date)
 			if err != nil {
-				fmt.Println(ColorRed(err))
+				fmt.Println(syncmediatrack.ColorRed(err))
 				return nil
 			}
 
@@ -101,9 +101,9 @@ func Execute() {
 			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
 
 			if geoservice {
-				loc, _ := ReverseLocation(location)
+				loc, _ := syncmediatrack.ReverseLocation(location)
 				if len(loc) != 0 {
-					fmt.Printf("(%s)", ColorGreen(loc))
+					fmt.Printf("(%s)", syncmediatrack.ColorGreen(loc))
 				}
 			}
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
@@ -117,7 +117,7 @@ func Execute() {
 				return nil
 			}
 
-			err = WriteGPS(location, path)
+			err = syncmediatrack.WriteGPS(location, path)
 			if err != nil {
 				fmt.Println(err)
 				return nil
