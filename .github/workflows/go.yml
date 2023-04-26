@@ -22,27 +22,60 @@ jobs:
     runs-on: ${{ matrix.targets.os }}
     steps:
       - uses: actions/checkout@v3
-
+        with:
+           fetch-depth: 0 # Mandatory to use the extract version from tag action
+           
       - uses: extractions/setup-just@v1
+
+      - name: Extract version from tag
+        uses: damienaicheh/extract-version-from-tag-action@v1.1.0
 
       - name: Build SyncMediaTrack (macOS)
         if: ${{ matrix.targets.os == 'macos-latest' }}
-        run: GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o SyncMediaTrack
+          tar -cf SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz SyncMediaTrack
 
-      - name: Build SyncMediaTrack (Linux)
-        if: ${{ matrix.targets.os == 'ubuntu-latest' }}
-        run: GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
-
-      - name: Build SyncMediaTrack (Windows)
-        if: ${{ matrix.targets.os == 'windows-2022' }}
-        run: GOOS=windows GOARCH=amd64 go build -o SyncMediaTrack.exe
-
-      - name: Save Binaries
+      - name: Upload compress files
+        if: ${{ matrix.targets.os == 'macos-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: SyncMediaTrack
-          path: _deployment/_binaries/*.*
+          path: SyncMediaTrack-macos-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz
 
+      - name: Build SyncMediaTrack (Linux)
+        if: ${{ matrix.targets.os == 'ubuntu-latest' }}
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o SyncMediaTrack
+          tar -cf SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz SyncMediaTrack
+
+      - name: Upload compress files
+        if: ${{ matrix.targets.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: SyncMediaTrack
+          path: SyncMediaTrack-linux-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.tar.gz 
+            
+      - name: Build SyncMediaTrack (Windows)
+        if: ${{ matrix.targets.os == 'windows-2022' }}
+        run: go build -o SyncMediaTrack.exe
+
+      - name: Install zip (Windows)
+        if: ${{ matrix.targets.os == 'windows-2022' }}
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.zip'
+          path: SyncMediaTrack.exe
+
+      - name: Upload compress files
+        if: ${{ matrix.targets.os == 'windows-2022' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: SyncMediaTrack
+          path: SyncMediaTrack-windows-amd64-v${{ env.MAJOR }}.${{ env.MINOR }}.zip
+
+            
   github_release:
     name: Create GitHub release
     needs: build
