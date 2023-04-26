@@ -46,6 +46,7 @@ var (
 	geoservice bool
 	mediaDir   string
 	track      string
+)
 
 	colorGreen  = color.New(color.FgGreen).SprintFunc()
 	colorRed    = color.New(color.FgRed).SprintFunc()
