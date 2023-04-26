@@ -1,6 +1,6 @@
 package main
 
-import "github.com/inode64/SyncMediaTack/cmd"
+import "github.com/inode64/SyncMediaTrack/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/inode64/SyncMediaTack/lib"
+	"github.com/inode64/SyncMediaTrack/lib"
 	"github.com/karrick/godirwalk"
 	"github.com/spf13/cobra"
 )
