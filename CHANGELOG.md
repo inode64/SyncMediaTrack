@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Restructures the code in directories
+- Fix use of global variable
 
 ### Added
+- Include support for read GPS Time from Gopro Video
+- Support for read any video or image file
 
 ## [1.1] - 2023-04-20
 

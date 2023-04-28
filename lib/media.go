@@ -7,14 +7,12 @@ import (
 )
 
 func FileIsMedia(filename string) bool {
-	allowed := []string{"image/jpeg", "video/mp4"}
-
 	mtype, err := mimetype.DetectFile(filename)
 	if err != nil {
 		return false
 	}
 
-	return mimetype.EqualsAny(mtype.String(), allowed...)
+	return strings.Contains(mtype.String(), "video/") || strings.Contains(mtype.String(), "image/")
 }
 
 func FileIsVideo(filename string) bool {
@@ -23,5 +21,5 @@ func FileIsVideo(filename string) bool {
 		return false
 	}
 
-	return strings.Contains(mtype.String(), "video")
+	return strings.Contains(mtype.String(), "video/")
 }
