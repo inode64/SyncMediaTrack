@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"time"
@@ -64,6 +65,7 @@ func Execute() {
 	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			var date time.Time
+			var dateOld time.Time
 
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
@@ -79,10 +81,23 @@ func Execute() {
 			}
 			fmt.Printf("[%v] - ", relPath)
 
-			err = syncmediatrack.GetMediaDate(path, &date, &gpsOld)
+			err = syncmediatrack.GetMediaDate(path, &dateOld, &gpsOld, false)
 			if err != nil {
 				fmt.Println(err)
 				return nil
+			}
+
+			err = syncmediatrack.GetMediaDate(path, &date, &gpsOld, true)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			diff := math.Abs(date.Sub(dateOld).Seconds())
+			if diff > 30 {
+				fmt.Printf("%s -> %s : ", syncmediatrack.ColorYellow(dateOld.Format("02/01/2006 15:04:05")), date.Format("02/01/2006 15:04:05"))
+			} else {
+				fmt.Printf("%s -> %s : ", dateOld.Format("02/01/2006 15:04:05"), date.Format("02/01/2006 15:04:05"))
 			}
 
 			location, err := syncmediatrack.GetClosesGPS(date)

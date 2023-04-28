@@ -16,14 +16,14 @@ import (
 	"github.com/konradit/mmt/pkg/videomanipulation"
 )
 
-func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
+func GetMediaDate(filename string, t *time.Time, gps *Trkpt, getGPSdate bool) error {
 	f, err := os.Stat(filename)
 	if err != nil {
 		return err
 	}
 	*t = f.ModTime()
 
-	if FileIsVideo(filename) {
+	if getGPSdate && FileIsVideo(filename) {
 		if getTimeFromMP4(filename, t) {
 			return nil
 		}

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Include support for read GPS Time from Gopro Video
 - Support for read any video or image file
+- show date comparison
+
 
 ## [1.1] - 2023-04-20
 
