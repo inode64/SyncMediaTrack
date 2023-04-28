@@ -1,8 +1,10 @@
 package syncmediatrack
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"regexp"
@@ -10,6 +12,8 @@ import (
 	"time"
 
 	"github.com/barasher/go-exiftool"
+	"github.com/konradit/gopro-utils/telemetry"
+	"github.com/konradit/mmt/pkg/videomanipulation"
 )
 
 func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
@@ -18,6 +22,12 @@ func GetMediaDate(filename string, t *time.Time, gps *Trkpt) error {
 		return err
 	}
 	*t = f.ModTime()
+
+	if FileIsVideo(filename) {
+		if getTimeFromMP4(filename, t) {
+			return nil
+		}
+	}
 
 	// create an instance of exiftool
 	et, err := exiftool.NewExiftool(exiftool.CoordFormant("%+f"))
@@ -69,7 +79,7 @@ func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 	var closestPoint Trkpt
 	var closestDuration time.Duration
 
-	for _, gpx := range dataGPX {
+	for _, gpx := range DataGPX {
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 			if len(trkpt.Time) == 0 {
 				continue
@@ -146,4 +156,48 @@ func WriteGPS(gps Trkpt, filename string) error {
 	et.WriteMetadata([]exiftool.FileMetadata{fileInfo})
 
 	return nil
+}
+
+func getTimeFromMP4(videoPath string, date *time.Time) bool {
+	vman := videomanipulation.New()
+	data, err := vman.ExtractGPMF(videoPath)
+	if err != nil {
+		return false
+	}
+
+	reader := bytes.NewReader(*data)
+
+	lastEvent := &telemetry.TELEM{}
+
+	for {
+		event, err := telemetry.Read(reader)
+		if err != nil && err != io.EOF {
+			return false
+		} else if err == io.EOF || event == nil {
+			break
+		}
+
+		if lastEvent.IsZero() {
+			*lastEvent = *event
+			event.Clear()
+			continue
+		}
+
+		err = lastEvent.FillTimes(event.Time.Time)
+		if err != nil {
+			return false
+		}
+
+		telems := lastEvent.ShitJson()
+		for _, telem := range telems {
+			if telem.Latitude != 0 && telem.Longitude != 0 {
+				*date = time.UnixMicro(telem.TS)
+
+				return true
+			}
+		}
+		*lastEvent = *event
+	}
+
+	return false
 }

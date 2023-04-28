@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	dataGPX    []syncmediatrack.Gpx
 	dryRun     bool
 	force      bool
 	geoservice bool
@@ -58,7 +57,7 @@ func Execute() {
 		syncmediatrack.ReadGPX(track)
 	}
 
-	if len(dataGPX) == 0 {
+	if len(syncmediatrack.DataGPX) == 0 {
 		log.Fatal(syncmediatrack.ColorRed("There is no track processed"))
 	}
 

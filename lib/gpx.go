@@ -30,7 +30,7 @@ type Trkpt struct {
 	Ele  float64 `xml:"ele"`
 }
 
-var dataGPX []Gpx
+var DataGPX []Gpx
 
 func ReadGPX(filename string) {
 	fmt.Printf("Processing: %v \n", filename)
@@ -58,7 +58,7 @@ func ReadGPX(filename string) {
 		return
 	}
 
-	dataGPX = append(dataGPX, gpx)
+	DataGPX = append(DataGPX, gpx)
 }
 
 func ReadGPXDir(trackDir string) {

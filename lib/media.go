@@ -1,6 +1,8 @@
 package syncmediatrack
 
 import (
+	"strings"
+
 	"github.com/gabriel-vasile/mimetype"
 )
 
@@ -13,4 +15,13 @@ func FileIsMedia(filename string) bool {
 	}
 
 	return mimetype.EqualsAny(mtype.String(), allowed...)
+}
+
+func FileIsVideo(filename string) bool {
+	mtype, err := mimetype.DetectFile(filename)
+	if err != nil {
+		return false
+	}
+
+	return strings.Contains(mtype.String(), "video")
 }
