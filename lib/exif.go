@@ -54,6 +54,12 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 			}
 		}
 	}
+	if gps.Lon != 0 && gps.Lat != 0 && gtime.IsZero() {
+		t, err := metas[0].GetString("GPSDateTime")
+		if err == nil {
+			gtime, _ = time.Parse("2006:01:02 15:04:05Z", t)
+		}
+	}
 
 	// define the list of possible tags to extract date from
 	dateTags := []string{"DateTimeOriginal", "DateTime", "DateTimeDigitized"}
@@ -65,9 +71,9 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 			continue
 		}
 		if val != "" {
-			etime, err := time.Parse("2006:01:02 15:04:05", val)
+			t, err := time.Parse("2006:01:02 15:04:05", val)
 			if err == nil {
-				return atime, etime, gtime, nil
+				return atime, t, gtime, nil
 			}
 		}
 	}
