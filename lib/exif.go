@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/barasher/go-exiftool"
+    "github.com/evanoberholster/timezoneLookup"
 	"github.com/konradit/gopro-utils/telemetry"
 	"github.com/konradit/mmt/pkg/videomanipulation"
 )
@@ -200,4 +201,43 @@ func getTimeFromMP4(videoPath string) time.Time {
 	}
 
 	return time.Time{}
+}
+
+func getZoneFromGPS(lat, lon float64) (*time.Location, error) {
+    // Get the name of the time zone corresponding to the GPS position
+    zoneName, err := timezoneLookup.GetZone(lat, lon)
+    if err != nil {
+        return nil, err
+    }
+
+    // Get time zone from time zone name
+    loc, err := time.LoadLocation(zoneName)
+    if err != nil {
+        return nil, err
+    }
+
+    return loc, nil
+}
+
+func updateDST(zone time.Location, gpsTime *time.Time) {
+	// Get the time zone corresponding to the geographic location
+	loc, err := time.LoadLocation(zone)
+	if err != nil {
+		return
+	}
+
+	// Adjust GPS time to time zone time
+	*gpsTime = gpsTime.In(loc)
+
+	// Check if GPS time is in daylight saving time
+	isDST := loc.Daylight()
+
+	// Set GPS time to summer or winter time as appropriate
+	if isDST {
+		// GPS time is in daylight saving time, subtract one hour to adjust it to standard time
+		*gpsTime = gpsTime.Add(-time.Hour)
+	} else {
+		// GPS time is in standard time, add one hour to adjust to daylight saving time
+		*gpsTime = gpsTime.Add(time.Hour)
+	}
 }

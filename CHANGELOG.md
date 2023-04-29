@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiples GPX files
 - Use color red for fatal errors
 - Show old location
+- Support to adjust the date according to the time zone and if it has daylight saving time
 
 ## [1.0] - 2023-04-15
 
