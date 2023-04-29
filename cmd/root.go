@@ -64,9 +64,6 @@ func Execute() {
 
 	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
-			var date time.Time
-			var dateOld time.Time
-
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
 			}
@@ -81,24 +78,28 @@ func Execute() {
 			}
 			fmt.Printf("[%v] - ", relPath)
 
-			err = syncmediatrack.GetMediaDate(path, &dateOld, &gpsOld, false)
+			atime, etime, gtime, err := syncmediatrack.GetMediaDate(path, &gpsOld)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			err = syncmediatrack.GetMediaDate(path, &date, &gpsOld, true)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			diff := math.Abs(date.Sub(dateOld).Seconds())
-			if diff > 30 {
-				fmt.Printf("%s -> %s : ", syncmediatrack.ColorYellow(dateOld.Format("02/01/2006 15:04:05")), date.Format("02/01/2006 15:04:05"))
+			if etime.IsZero() {
+				if gtime.IsZero() {
+					fmt.Printf("%s ", atime.Format("02/01/2006 15:04:05"))
+				} else {
+					compareDates(atime, gtime)
+				}
 			} else {
-				fmt.Printf("%s -> %s : ", dateOld.Format("02/01/2006 15:04:05"), date.Format("02/01/2006 15:04:05"))
+				compareDates(atime, etime)
+				if !gtime.IsZero() {
+					compareDates(etime, gtime)
+				}
 			}
+
+			date := bestDate(atime, etime, gtime)
+
+			fmt.Printf(": ")
 
 			location, err := syncmediatrack.GetClosesGPS(date)
 			if err != nil {
@@ -142,5 +143,26 @@ func Execute() {
 	})
 	if err != nil {
 		fmt.Println(err)
+	}
+}
+
+func bestDate(atime time.Time, etime time.Time, gtime time.Time) time.Time {
+	if !gtime.IsZero() {
+		return gtime
+	}
+	if !etime.IsZero() {
+		return etime
+	}
+
+	return atime
+}
+
+func compareDates(old time.Time, new time.Time) {
+	diff := math.Abs(old.Sub(new).Seconds())
+
+	if diff > 30 {
+		fmt.Printf("%s -> %s ", syncmediatrack.ColorYellow(old.Format("02/01/2006 15:04:05")), new.Format("02/01/2006 15:04:05"))
+	} else {
+		fmt.Printf("%s -> %s ", old.Format("02/01/2006 15:04:05"), new.Format("02/01/2006 15:04:05"))
 	}
 }

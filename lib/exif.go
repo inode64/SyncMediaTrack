@@ -16,23 +16,25 @@ import (
 	"github.com/konradit/mmt/pkg/videomanipulation"
 )
 
-func GetMediaDate(filename string, t *time.Time, gps *Trkpt, getGPSdate bool) error {
+func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time, error) {
+	var atime, etime, gtime time.Time
+
 	f, err := os.Stat(filename)
 	if err != nil {
-		return err
+		return atime, etime, gtime, err
 	}
-	*t = f.ModTime()
+	atime = f.ModTime()
 
-	if getGPSdate && FileIsVideo(filename) {
-		if getTimeFromMP4(filename, t) {
-			return nil
+	if FileIsVideo(filename) {
+		if getTimeFromMP4(filename, &gtime) {
+			return atime, etime, gtime, nil
 		}
 	}
 
 	// create an instance of exiftool
 	et, err := exiftool.NewExiftool(exiftool.CoordFormant("%+f"))
 	if err != nil {
-		return err
+		return atime, etime, gtime, err
 	}
 	defer et.Close()
 
@@ -63,16 +65,14 @@ func GetMediaDate(filename string, t *time.Time, gps *Trkpt, getGPSdate bool) er
 			continue
 		}
 		if val != "" {
-			date, err := time.Parse("2006:01:02 15:04:05", val)
-			if err != nil {
-				continue
+			etime, err := time.Parse("2006:01:02 15:04:05", val)
+			if err == nil {
+				return atime, etime, gtime, nil
 			}
-			*t = date
-			return nil
 		}
 	}
 
-	return nil
+	return atime, etime, gtime, nil
 }
 
 func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
