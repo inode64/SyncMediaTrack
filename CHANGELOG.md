@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Restructures the code in directories
 - Fix use of global variable
+- Fix problem when exif data is not obtained if GPS time is obtained from mp4
 
 ### Added
 - Include support for read GPS Time from Gopro Video

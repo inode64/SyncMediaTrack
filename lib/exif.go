@@ -25,9 +25,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 	atime = f.ModTime()
 
 	if FileIsVideo(filename) {
-		if getTimeFromMP4(filename, &gtime) {
-			return atime, etime, gtime, nil
-		}
+		gtime = getTimeFromMP4(filename)
 	}
 
 	// create an instance of exiftool
@@ -162,11 +160,11 @@ func WriteGPS(gps Trkpt, filename string) error {
 	return nil
 }
 
-func getTimeFromMP4(videoPath string, date *time.Time) bool {
+func getTimeFromMP4(videoPath string) time.Time {
 	vman := videomanipulation.New()
 	data, err := vman.ExtractGPMF(videoPath)
 	if err != nil {
-		return false
+		return time.Time{}
 	}
 
 	reader := bytes.NewReader(*data)
@@ -176,7 +174,7 @@ func getTimeFromMP4(videoPath string, date *time.Time) bool {
 	for {
 		event, err := telemetry.Read(reader)
 		if err != nil && err != io.EOF {
-			return false
+			return time.Time{}
 		} else if err == io.EOF || event == nil {
 			break
 		}
@@ -189,19 +187,17 @@ func getTimeFromMP4(videoPath string, date *time.Time) bool {
 
 		err = lastEvent.FillTimes(event.Time.Time)
 		if err != nil {
-			return false
+			return time.Time{}
 		}
 
 		telems := lastEvent.ShitJson()
 		for _, telem := range telems {
 			if telem.Latitude != 0 && telem.Longitude != 0 {
-				*date = time.UnixMicro(telem.TS)
-
-				return true
+				return time.UnixMicro(telem.TS)
 			}
 		}
 		*lastEvent = *event
 	}
 
-	return false
+	return time.Time{}
 }
