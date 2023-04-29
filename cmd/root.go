@@ -64,6 +64,8 @@ func Execute() {
 
 	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
+			var location syncmediatrack.Trkpt
+
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
 			}
@@ -96,19 +98,24 @@ func Execute() {
 
 			fmt.Printf("| ")
 
-			location, err := syncmediatrack.GetClosesGPS(date)
-			if err != nil {
-				fmt.Println(syncmediatrack.ColorRed(err))
-				return nil
-			}
-
 			if gpsOld.Lat == 0 && gpsOld.Lon == 0 {
 				fmt.Printf("No location")
 			} else {
 				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
 			}
+			fmt.Printf(" -> ")
 
-			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
+			if syncmediatrack.GetClosesGPS(date, &location) {
+				if gpsOld.Lat != 0 && gpsOld.Lon != 0 {
+					fmt.Println(syncmediatrack.ColorYellow("Update not necessary"))
+				} else {
+					fmt.Println(syncmediatrack.ColorRed("There is no close time to obtain the GPS position"))
+				}
+
+				return nil
+			}
+
+			fmt.Printf("Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
 
 			if geoservice {
 				loc, _ := syncmediatrack.ReverseLocation(location)

@@ -2,7 +2,6 @@ package syncmediatrack
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -81,8 +80,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 	return atime, etime, gtime, nil
 }
 
-func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
-	var closestPoint Trkpt
+func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	var closestDuration time.Duration
 
 	for _, gpx := range DataGPX {
@@ -102,17 +100,17 @@ func GetClosesGPS(imageTime time.Time) (Trkpt, error) {
 			}
 
 			if closestDuration == 0 || duration < closestDuration {
-				closestPoint = trkpt
+				*closestPoint = trkpt
 				closestDuration = duration
 			}
 		}
 
 		if closestDuration.Seconds() > 30 {
-			return closestPoint, errors.New("There is no close time to obtain the GPS position")
+			return false
 		}
 	}
 
-	return closestPoint, nil
+	return true
 }
 
 func WriteGPS(gps Trkpt, filename string) error {
