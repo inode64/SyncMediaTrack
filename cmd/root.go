@@ -85,21 +85,16 @@ func Execute() {
 			}
 
 			if etime.IsZero() {
-				if gtime.IsZero() {
-					fmt.Printf("%s ", atime.Format("02/01/2006 15:04:05"))
-				} else {
-					compareDates(atime, gtime)
-				}
+				compareDates2(atime, gtime, "A")
 			} else {
+				fmt.Printf("[A] ")
 				compareDates(atime, etime)
-				if !gtime.IsZero() {
-					compareDates(etime, gtime)
-				}
+				compareDates2(etime, gtime, "E")
 			}
 
 			date := bestDate(atime, etime, gtime)
 
-			fmt.Printf(": ")
+			fmt.Printf("| ")
 
 			location, err := syncmediatrack.GetClosesGPS(date)
 			if err != nil {
@@ -161,8 +156,18 @@ func compareDates(old time.Time, new time.Time) {
 	diff := math.Abs(old.Sub(new).Seconds())
 
 	if diff > 30 {
-		fmt.Printf("%s -> %s ", syncmediatrack.ColorYellow(old.Format("02/01/2006 15:04:05")), new.Format("02/01/2006 15:04:05"))
+		fmt.Printf("%s -> ", syncmediatrack.ColorYellow(old.Format("02/01/2006 15:04:05")))
 	} else {
-		fmt.Printf("%s -> %s ", old.Format("02/01/2006 15:04:05"), new.Format("02/01/2006 15:04:05"))
+		fmt.Printf("%s -> ", old.Format("02/01/2006 15:04:05"))
+	}
+}
+
+func compareDates2(old time.Time, gtime time.Time, prefix string) {
+	fmt.Printf("[%s] ", prefix)
+	if gtime.IsZero() {
+		fmt.Printf("%s ", old.Format("02/01/2006 15:04:05"))
+	} else {
+		compareDates(old, gtime)
+		fmt.Printf("[G] %s ", gtime.Format("02/01/2006 15:04:05"))
 	}
 }

@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for read any video or image file
 - show date comparison
 - Get GPS Time from image file
-
+- Show kind of time (Archive time, Exit time, GPS time)
 
 ## [1.1] - 2023-04-20
 
