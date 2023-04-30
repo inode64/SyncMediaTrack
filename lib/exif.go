@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/barasher/go-exiftool"
-    "github.com/evanoberholster/timezoneLookup"
 	"github.com/konradit/gopro-utils/telemetry"
 	"github.com/konradit/mmt/pkg/videomanipulation"
+	"github.com/ringsaturn/tzf"
 )
 
 func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time, error) {
@@ -56,6 +56,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 		t, err := metas[0].GetString("GPSDateTime")
 		if err == nil {
 			gtime, _ = time.Parse("2006:01:02 15:04:05Z", t)
+			gtime = updateGPSDateTime(gtime, gps.Lat, gps.Lon)
 		}
 	}
 
@@ -194,7 +195,8 @@ func getTimeFromMP4(videoPath string) time.Time {
 		telems := lastEvent.ShitJson()
 		for _, telem := range telems {
 			if telem.Latitude != 0 && telem.Longitude != 0 {
-				return time.UnixMicro(telem.TS)
+				t := time.UnixMicro(telem.TS)
+				return updateGPSDateTime(t, telem.Latitude, telem.Longitude)
 			}
 		}
 		*lastEvent = *event
@@ -203,41 +205,26 @@ func getTimeFromMP4(videoPath string) time.Time {
 	return time.Time{}
 }
 
-func getZoneFromGPS(lat, lon float64) (*time.Location, error) {
-    // Get the name of the time zone corresponding to the GPS position
-    zoneName, err := timezoneLookup.GetZone(lat, lon)
-    if err != nil {
-        return nil, err
-    }
+func updateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Time {
+	if lat == 0 && lon == 0 {
+		return gpsDateTime
+	}
 
-    // Get time zone from time zone name
-    loc, err := time.LoadLocation(zoneName)
-    if err != nil {
-        return nil, err
-    }
+	finder, err := tzf.NewDefaultFinder()
+	if err != nil {
+		return gpsDateTime
+	}
 
-    return loc, nil
-}
+	zone := finder.GetTimezoneName(lon, lat)
 
-func updateDST(zone time.Location, gpsTime *time.Time) {
-	// Get the time zone corresponding to the geographic location
+	if zone == "" {
+		return gpsDateTime
+	}
+
 	loc, err := time.LoadLocation(zone)
 	if err != nil {
-		return
+		return gpsDateTime
 	}
 
-	// Adjust GPS time to time zone time
-	*gpsTime = gpsTime.In(loc)
-
-	// Check if GPS time is in daylight saving time
-	isDST := loc.Daylight()
-
-	// Set GPS time to summer or winter time as appropriate
-	if isDST {
-		// GPS time is in daylight saving time, subtract one hour to adjust it to standard time
-		*gpsTime = gpsTime.Add(-time.Hour)
-	} else {
-		// GPS time is in standard time, add one hour to adjust to daylight saving time
-		*gpsTime = gpsTime.Add(time.Hour)
-	}
+	return gpsDateTime.In(loc)
 }
