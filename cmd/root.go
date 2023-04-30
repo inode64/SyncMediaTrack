@@ -90,7 +90,7 @@ func Execute() {
 				compareDates2(atime, gtime, "A")
 			} else {
 				fmt.Printf("[A] ")
-				compareDates(atime, etime)
+				compareDates(atime, etime, 30)
 				compareDates2(etime, gtime, "E")
 			}
 
@@ -159,13 +159,17 @@ func bestDate(atime time.Time, etime time.Time, gtime time.Time) time.Time {
 	return atime
 }
 
-func compareDates(old time.Time, new time.Time) {
-	diff := math.Abs(old.Sub(new).Seconds())
+func compareDates(t1 time.Time, t2 time.Time, sec float64) {
+	// remove timezone from time
+	t1, _ = time.Parse("2006-01-02 15:04:05", t1.Format("2006-01-02 15:04:05"))
+	t2, _ = time.Parse("2006-01-02 15:04:05", t2.Format("2006-01-02 15:04:05"))
 
-	if diff > 30 {
-		fmt.Printf("%s -> ", syncmediatrack.ColorYellow(old.Format("02/01/2006 15:04:05")))
+	diff := math.Abs(t1.Sub(t2).Seconds())
+
+	if diff > sec {
+		fmt.Printf("%s -> ", syncmediatrack.ColorYellow(t1.Format("02/01/2006 15:04:05")))
 	} else {
-		fmt.Printf("%s -> ", old.Format("02/01/2006 15:04:05"))
+		fmt.Printf("%s -> ", t1.Format("02/01/2006 15:04:05"))
 	}
 }
 
@@ -174,7 +178,7 @@ func compareDates2(old time.Time, gtime time.Time, prefix string) {
 	if gtime.IsZero() {
 		fmt.Printf("%s ", old.Format("02/01/2006 15:04:05"))
 	} else {
-		compareDates(old, gtime)
+		compareDates(old, gtime, 80)
 		fmt.Printf("[G] %s ", gtime.Format("02/01/2006 15:04:05"))
 	}
 }
