@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/xml"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
 	"github.com/spf13/cobra"
+	gogpx "github.com/twpayne/go-gpx"
 )
 
 var updateTrackCmd = &cobra.Command{
@@ -23,8 +25,11 @@ var updateTrackCmd = &cobra.Command{
 	},
 }
 
+var updateHeader bool
+
 func init() {
 	rootCmd.AddCommand(updateTrackCmd)
+	rootCmd.PersistentFlags().BoolVar(&updateHeader, "updateheader", false, "Store the old filename in header.name")
 }
 
 func updateTrackExecute() {
@@ -85,6 +90,10 @@ func updateTrackExecute() {
 			continue
 		}
 
+		if updateHeader {
+			updateHeaderName(filename, basename)
+		}
+
 		newfilename = fmt.Sprintf("%s/%s", path, newfilename)
 
 		// rename filename to newfilename
@@ -115,4 +124,43 @@ func GetPosFromGPX(gpx syncmediatrack.Gpx) syncmediatrack.Trkpt {
 	}
 
 	return syncmediatrack.Trkpt{}
+}
+
+func updateHeaderName(filename string, basename string) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	g, err := gogpx.Read(f)
+	if err != nil {
+		return
+	}
+	if g.Metadata == nil {
+		g.Metadata = &gogpx.MetadataType{}
+	}
+
+	if g.Metadata.Name == "" {
+		// remove extension from basename
+		g.Metadata.Name = basename[:len(basename)-len(filepath.Ext(basename))]
+
+		f, err = os.Create(filename)
+		if err != nil {
+			fmt.Println(syncmediatrack.ColorRed(err))
+			return
+		}
+		defer f.Close()
+
+		// write xml header
+		_, err = f.WriteString(xml.Header)
+		if err != nil {
+			fmt.Println(syncmediatrack.ColorRed(err))
+			return
+		}
+
+		if err := g.WriteIndent(f, "", "  "); err != nil {
+			fmt.Println(syncmediatrack.ColorRed(err))
+		}
+	}
 }

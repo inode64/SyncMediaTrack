@@ -12,6 +12,7 @@ require (
 	github.com/konradit/mmt v0.0.0-20230427180435-d9af87028e83
 	github.com/ringsaturn/tzf v0.13.0
 	github.com/spf13/cobra v1.7.0
+	github.com/twpayne/go-gpx v1.3.0
 )
 
 require (
@@ -42,6 +43,7 @@ require (
 	github.com/tidwall/geoindex v1.7.0 // indirect
 	github.com/tidwall/geojson v1.4.3 // indirect
 	github.com/tidwall/rtree v1.10.0 // indirect
+	github.com/twpayne/go-geom v1.5.0 // indirect
 	github.com/twpayne/go-polyline v1.1.1 // indirect
 	github.com/vbauerster/mpb/v8 v8.1.4 // indirect
 	github.com/xfrr/goffmpeg v0.0.0-20210624103149-5ca2d3062daf // indirect

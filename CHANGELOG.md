@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show a notice when gps data is updated
 - Add an option to show more verbose information
 - Add default country support to remove geolocation
-
+- Update tracks with geolocation, date and time
+- Add support for store the old filename in header.name
 
 ## [1.2] - 2023-05-01
 
