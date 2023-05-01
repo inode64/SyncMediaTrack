@@ -129,10 +129,10 @@ func Execute() {
 				}
 			}
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
-				syncmediatrack.ColorYellow("(no update)")
+				fmt.Println(syncmediatrack.ColorYellow("(no update)"))
 				return nil
 			}
-			syncmediatrack.ColorGreen("(updating)")
+			fmt.Printf(syncmediatrack.ColorGreen("(updating)"))
 
 			fmt.Printf("\n")
 
