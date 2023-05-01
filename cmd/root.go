@@ -111,7 +111,7 @@ func Execute() {
 			}
 			fmt.Printf(" -> ")
 
-			if syncmediatrack.GetClosesGPS(date, &location) {
+			if !syncmediatrack.GetClosesGPS(date, &location) {
 				if gpsOld.Lat != 0 && gpsOld.Lon != 0 {
 					fmt.Println(syncmediatrack.ColorYellow("Update not necessary"))
 				} else {
