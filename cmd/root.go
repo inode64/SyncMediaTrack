@@ -25,6 +25,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
 	rootCmd.PersistentFlags().BoolVar(&geoservice, "geoservice", false, "Show location from GPS position from geocoding service of openstreetmap")
 	rootCmd.PersistentFlags().BoolVar(&syncmediatrack.Verbose, "verbose", false, "Show more information")
+	rootCmd.PersistentFlags().StringVar(&syncmediatrack.DefaultCountry, "defaultcountry", "", "Remove this country from geocoding")
 	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
 }
 

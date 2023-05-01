@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
@@ -71,8 +70,7 @@ func updateTrackExecute() {
 			loc, _ := syncmediatrack.ReverseLocation(trkpt)
 			if len(loc) != 0 {
 				// remove '/' from loc
-				loc = strings.ReplaceAll(loc, "/", "-")
-
+				loc = syncmediatrack.GeonameCleanup(loc)
 
 				newfilename = fmt.Sprintf("%s_%s", newfilename, loc)
 			}
