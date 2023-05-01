@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fatih/color"
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
 	"github.com/karrick/godirwalk"
 	"github.com/spf13/cobra"
@@ -130,10 +129,10 @@ func Execute() {
 				}
 			}
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
-				color.Yellow("(no update)")
+				syncmediatrack.ColorYellow("(no update)")
 				return nil
 			}
-			color.ColorGreen("(updating)")
+			syncmediatrack.ColorGreen("(updating)")
 
 			fmt.Printf("\n")
 
