@@ -18,7 +18,13 @@ Make sure your GPS receiver is recording a track log. Keep your GPSr ON during a
 Get the latest version from https://exiftool.org/ or install it from the installer of your Linux distribution.
 In **Windows** you need to copy the _exiftool_ executable to some directory included in the %PATH% environment variable, for example c:\Windows.
 
-## 4) Run from command-line SyncMediaTrack
+## 4) Download ( ffmpeg / ffprobe ) (optional)
+
+Ffmpeg is required to read the GPS latitude / longitude and GPSDatetime from the video GoPro files.
+Get the latest version from https://ffmpeg.org/ or install it from the installer of your Linux distribution.
+In **Windows** you need to copy the _ffmpeg_ and _ffprobe_ executable to some directory included in the %PATH% environment variable, for example c:\Windows.
+
+## 5) Run from command-line SyncMediaTrack
 First it is advisable to check that the images are well located,
 ```
 SyncMediaTrack --dry-run --geoservice --track XXXX.gpx photos/Andorra
