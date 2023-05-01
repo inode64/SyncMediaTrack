@@ -42,7 +42,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 	gps.Lat, _ = metas[0].GetFloat("GPSLatitude")
 	EleStr, err := metas[0].GetString("GPSAltitude")
 	if err == nil {
-		re := regexp.MustCompile(`(\d+) m.*`)
+		re := regexp.MustCompile(`(\d+(\.\d+)?) m.*`)
 		match := re.FindStringSubmatch(EleStr)
 
 		if len(match) > 1 {
