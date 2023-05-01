@@ -63,6 +63,7 @@ func updateTrackExecute() {
 
 			continue
 		}
+		trkptTime = syncmediatrack.UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
 
 		newfilename := trkptTime.Format("2006_01_02_15_04_mon")
 

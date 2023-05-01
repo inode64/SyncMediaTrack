@@ -58,7 +58,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 		t, err := metas[0].GetString("GPSDateTime")
 		if err == nil {
 			gtime, _ = time.Parse("2006:01:02 15:04:05Z", t)
-			gtime = updateGPSDateTime(gtime, gps.Lat, gps.Lon)
+			gtime = UpdateGPSDateTime(gtime, gps.Lat, gps.Lon)
 		}
 	}
 
@@ -202,7 +202,7 @@ func getTimeFromMP4(videoPath string) time.Time {
 		for _, telem := range telems {
 			if telem.Latitude != 0 && telem.Longitude != 0 {
 				t := time.UnixMicro(telem.TS)
-				return updateGPSDateTime(t, telem.Latitude, telem.Longitude)
+				return UpdateGPSDateTime(t, telem.Latitude, telem.Longitude)
 			}
 		}
 		*lastEvent = *event
@@ -211,7 +211,7 @@ func getTimeFromMP4(videoPath string) time.Time {
 	return time.Time{}
 }
 
-func updateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Time {
+func UpdateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Time {
 	if lat == 0 && lon == 0 {
 		return gpsDateTime
 	}
