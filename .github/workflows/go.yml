@@ -5,8 +5,7 @@ name: go-package
 
 on:
   push:
-    tags:
-      - 'v*.*'
+
 
 jobs:
   build:
