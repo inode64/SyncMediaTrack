@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -46,6 +47,11 @@ func Execute() {
 	var gpsOld syncmediatrack.Trkpt
 
 	cobra.CheckErr(rootCmd.Execute())
+
+	// check if ffmpeg is installed
+	if !FfmpegInstalled() {
+		fmt.Println(syncmediatrack.ColorRed("Ffmpeg is not installed, checking the GPS position and time of Gopro videos will not be performed"))
+	}
 
 	fileInfo, err := os.Stat(track)
 	if err != nil {
@@ -181,4 +187,17 @@ func compareDates2(old time.Time, gtime time.Time, prefix string) {
 		compareDates(old, gtime, 80)
 		fmt.Printf("[G] %s ", gtime.Format("02/01/2006 15:04:05"))
 	}
+}
+
+// Function to check if ffmpeg is installed
+func FfmpegInstalled() bool {
+	path, err := exec.LookPath("ffmpeg")
+	if err != nil {
+		return false
+	}
+
+	cmd := exec.Command(path, "-version")
+	err = cmd.Run()
+
+	return err == nil
 }
