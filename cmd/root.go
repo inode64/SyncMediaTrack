@@ -133,7 +133,7 @@ func Execute() {
 				color.Yellow("(no update)")
 				return nil
 			}
-			color.Yellow("(updating)")
+			color.ColorGreen("(updating)")
 
 			fmt.Printf("\n")
 
