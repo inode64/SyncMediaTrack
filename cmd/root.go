@@ -39,6 +39,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Performs the actions without writing to the files")
 	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force update even overwriting previous GPS data")
 	rootCmd.PersistentFlags().BoolVar(&geoservice, "geoservice", false, "Show location from GPS position from geocoding service of openstreetmap")
+	rootCmd.PersistentFlags().BoolVar(&syncmediatrack.Verbose, "verbose", false, "Show more information")
 	rootCmd.PersistentFlags().StringVar(&track, "track", "", "GPX track or a directory of GPX tracks")
 }
 
@@ -132,9 +133,8 @@ func Execute() {
 				fmt.Println(syncmediatrack.ColorYellow("(no update)"))
 				return nil
 			}
-			fmt.Printf(syncmediatrack.ColorGreen("(updating)"))
 
-			fmt.Printf("\n")
+			fmt.Println(syncmediatrack.ColorGreen("(updating)"))
 
 			if dryRun {
 				return nil

@@ -16,6 +16,8 @@ import (
 	"github.com/ringsaturn/tzf"
 )
 
+var Verbose bool
+
 func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time, error) {
 	var atime, etime, gtime time.Time
 
@@ -104,10 +106,14 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 				closestDuration = duration
 			}
 		}
+	}
 
-		if closestDuration.Seconds() > 30 {
-			return false
-		}
+	if Verbose {
+		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+	}
+
+	if closestDuration.Seconds() > 500 {
+		return false
 	}
 
 	return true
