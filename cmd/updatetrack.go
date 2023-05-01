@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
@@ -44,10 +45,11 @@ func updateTrackExecute() {
 	}
 
 	for filename, gpx := range syncmediatrack.DataGPX {
-		// quitar la ruta del archivo
-		filename := filepath.Base(filename)
+		// split path and basename from filename
+		path := filepath.Dir(filename)
+		basename := filepath.Base(filename)
 
-		fmt.Printf("[%v] - ", filename)
+		fmt.Printf("[%v] -> ", basename)
 
 		trkpt := GetPosFromGPX(gpx)
 		if len(trkpt.Time) == 0 {
@@ -63,15 +65,44 @@ func updateTrackExecute() {
 			continue
 		}
 
-		fmt.Printf("%s", trkptTime.Format("2006_01_02_15_04_mon"))
+		newfilename := trkptTime.Format("2006_01_02_15_04_mon")
 
 		if geoservice {
 			loc, _ := syncmediatrack.ReverseLocation(trkpt)
 			if len(loc) != 0 {
-				fmt.Printf("_%s", syncmediatrack.ColorGreen(loc))
+				// remove '/' from loc
+				loc = strings.ReplaceAll(loc, "/", "-")
+
+
+				newfilename = fmt.Sprintf("%s_%s", newfilename, loc)
 			}
 		}
-		fmt.Println(".gpx")
+
+		newfilename = fmt.Sprintf("%s.gpx", newfilename)
+
+		fmt.Println(newfilename)
+
+		if dryRun {
+			continue
+		}
+
+		newfilename = fmt.Sprintf("%s/%s", path, newfilename)
+
+		// rename filename to newfilename
+		err = os.Rename(filename, newfilename)
+		if err != nil {
+			fmt.Println(syncmediatrack.ColorRed(err))
+
+			continue
+		}
+
+		// update time of the newfilename from trkptTime
+		err = os.Chtimes(newfilename, trkptTime, trkptTime)
+		if err != nil {
+			fmt.Println(syncmediatrack.ColorRed(err))
+
+			continue
+		}
 	}
 }
 
