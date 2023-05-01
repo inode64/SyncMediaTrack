@@ -58,7 +58,14 @@ func ReadGPX(filename string) {
 		return
 	}
 
-	DataGPX = append(DataGPX, gpx)
+	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
+		if len(trkpt.Time) != 0 {
+			DataGPX = append(DataGPX, gpx)
+			return
+		}
+	}
+
+	fmt.Println(ColorYellow("Warning: GPX file does not have time stamps."))
 }
 
 func ReadGPXDir(trackDir string) {
