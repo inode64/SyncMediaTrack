@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 	Short:   "Synchronize Media Data from track GPX",
 	Long:    `Using a gpx track, analyze a directory with images or movies and add the GPS positions`,
 	Args:    cobra.MinimumNArgs(1),
-	Version: "1.1",
+	Version: "1.3",
 }
 
 func init() {

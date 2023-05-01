@@ -30,10 +30,14 @@ type Trkpt struct {
 	Ele  float64 `xml:"ele"`
 }
 
-var DataGPX []Gpx
+var DataGPX map[string]Gpx
+
+func init() {
+	DataGPX = make(map[string]Gpx)
+}
 
 func ReadGPX(filename string) {
-	fmt.Printf("Processing: %v \n", filename)
+	fmt.Printf("Reading: %v \n", filename)
 
 	mtype, err := mimetype.DetectFile(filename)
 	if err != nil {
@@ -60,7 +64,7 @@ func ReadGPX(filename string) {
 
 	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 		if len(trkpt.Time) != 0 {
-			DataGPX = append(DataGPX, gpx)
+			DataGPX[filename] = gpx
 			return
 		}
 	}
@@ -85,3 +89,6 @@ func ReadGPXDir(trackDir string) {
 		fmt.Println(err)
 	}
 }
+
+// como usar un indice como una cadena de texto
+// https://stackoverflow.com/questions/17573190/how-to-convert-an-integer-to-a-string-in-go
