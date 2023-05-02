@@ -16,7 +16,17 @@ import (
 	"github.com/ringsaturn/tzf"
 )
 
-var Verbose bool
+var (
+	Verbose bool
+	finder tzf.F
+)
+func init() {
+	var err error
+	finder, err = tzf.NewDefaultFinder()
+	if err != nil {
+		log.Fatal(ColorRed(err))
+	}
+}
 
 func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time, error) {
 	var atime, etime, gtime time.Time
@@ -213,11 +223,6 @@ func getTimeFromMP4(videoPath string) time.Time {
 
 func UpdateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Time {
 	if lat == 0 && lon == 0 {
-		return gpsDateTime
-	}
-
-	finder, err := tzf.NewDefaultFinder()
-	if err != nil {
 		return gpsDateTime
 	}
 
