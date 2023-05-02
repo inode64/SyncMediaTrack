@@ -84,7 +84,22 @@ func updateTrackExecute() {
 
 		newfilename = fmt.Sprintf("%s.gpx", newfilename)
 
-		fmt.Println(newfilename)
+		fmt.Print(newfilename)
+
+		if basename == newfilename {
+			fmt.Println(syncmediatrack.ColorYellow(" (no update)"))
+
+			continue
+		}
+
+		_, err = os.Stat(fmt.Sprintf("%s/%s", path, newfilename))
+		if err == nil {
+			fmt.Println(syncmediatrack.ColorRed(" (File already exists, no update)"))
+
+			continue
+		}
+
+		fmt.Println()
 
 		if dryRun {
 			continue
