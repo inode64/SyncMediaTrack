@@ -18,8 +18,9 @@ import (
 
 var (
 	Verbose bool
-	finder tzf.F
+	finder  tzf.F
 )
+
 func init() {
 	var err error
 	finder, err = tzf.NewDefaultFinder()
