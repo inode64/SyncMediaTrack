@@ -101,16 +101,18 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		closestDuration = 0
 		oldtrkptTime = time.Time{}
 
+		first := gpx.Trk.Trkseg.Trkpt[0]
+		last := gpx.Trk.Trkseg.Trkpt[len(gpx.Trk.Trkseg.Trkpt)-1]
+
+		if !isBetween(imageTime, getTimeFromTrkpt(first), getTimeFromTrkpt(last)) {
+			continue
+		}
+
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
-			if len(trkpt.Time) == 0 {
+			trkptTime := getTimeFromTrkpt(trkpt)
+			if trkptTime.IsZero() {
 				continue
 			}
-			trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
-			if err != nil {
-				fmt.Printf(ColorRed(err) + "\n")
-				continue
-			}
-			trkptTime = UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
 
 			duration := imageTime.Sub(trkptTime)
 			if duration < 0 {
@@ -132,6 +134,10 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		}
 	}
 
+	if oldtrkptTime.IsZero() {
+		return false
+	}
+
 	if Verbose && closestDuration.Seconds() < 3600 {
 		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
 	}
@@ -141,6 +147,19 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	}
 
 	return true
+}
+
+func getTimeFromTrkpt(trkpt Trkpt) time.Time {
+	if len(trkpt.Time) == 0 {
+		return time.Time{}
+	}
+
+	t, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
+	if err != nil {
+		return time.Time{}
+	}
+
+	return UpdateGPSDateTime(t, trkpt.Lat, trkpt.Lon)
 }
 
 func isBetween(date, start, end time.Time) bool {
