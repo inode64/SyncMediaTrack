@@ -83,7 +83,7 @@ func ReadGPXDir(trackDir string) {
 
 			return nil
 		},
-		Unsorted: true,
+		Unsorted: false,
 	})
 	if err != nil {
 		fmt.Println(err)
