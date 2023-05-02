@@ -97,7 +97,10 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	var closestDuration time.Duration
 	var oldtrkptTime time.Time
 
-	for _, gpx := range DataGPX {
+	for filename, gpx := range DataGPX {
+		closestDuration = 0
+		oldtrkptTime = time.Time{}
+
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 			if len(trkpt.Time) == 0 {
 				continue
@@ -109,7 +112,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 			}
 			trkptTime = UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
 
-			duration := imageTime.Sub(trkptTime.UTC())
+			duration := imageTime.Sub(trkptTime)
 			if duration < 0 {
 				duration = -duration
 			}
@@ -121,7 +124,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 
 			if isBetween(imageTime, oldtrkptTime, trkptTime) {
 				if Verbose {
-					fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+					fmt.Printf(" Diff.sec (%.0f [%s]) ", closestDuration.Seconds(), filename)
 				}
 				return true
 			}
@@ -129,7 +132,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		}
 	}
 
-	if Verbose {
+	if Verbose && closestDuration.Seconds() < 3600 {
 		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
 	}
 
