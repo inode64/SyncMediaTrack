@@ -95,6 +95,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 
 func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	var closestDuration time.Duration
+	var oldtrkptTime time.Time
 
 	for _, gpx := range DataGPX {
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
@@ -106,6 +107,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 				fmt.Printf(ColorRed(err) + "\n")
 				continue
 			}
+			trkptTime = UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
 
 			duration := imageTime.Sub(trkptTime.UTC())
 			if duration < 0 {
@@ -116,6 +118,14 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 				*closestPoint = trkpt
 				closestDuration = duration
 			}
+
+			if isBetween(imageTime, oldtrkptTime, trkptTime) {
+				if Verbose {
+					fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+				}
+				return true
+			}
+			oldtrkptTime = trkptTime
 		}
 	}
 
@@ -128,6 +138,14 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	}
 
 	return true
+}
+
+func isBetween(date, start, end time.Time) bool {
+	if start.IsZero() || end.IsZero() {
+		return false
+	}
+
+	return (date.Equal(start) || date.After(start)) && (date.Equal(end) || date.Before(end))
 }
 
 func WriteGPS(gps Trkpt, filename string) error {
@@ -238,5 +256,10 @@ func UpdateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Tim
 		return gpsDateTime
 	}
 
-	return gpsDateTime.In(loc)
+	trkptTime := gpsDateTime.In(loc)
+
+	// remove timezone from time
+	trkptTime, _ = time.Parse("2006-01-02 15:04:05", trkptTime.Format("2006-01-02 15:04:05"))
+
+	return trkptTime
 }

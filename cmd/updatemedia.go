@@ -156,10 +156,6 @@ func bestDate(atime time.Time, etime time.Time, gtime time.Time) time.Time {
 }
 
 func compareDates(t1 time.Time, t2 time.Time, sec float64) {
-	// remove timezone from time
-	t1, _ = time.Parse("2006-01-02 15:04:05", t1.Format("2006-01-02 15:04:05"))
-	t2, _ = time.Parse("2006-01-02 15:04:05", t2.Format("2006-01-02 15:04:05"))
-
 	diff := math.Abs(t1.Sub(t2).Seconds())
 
 	if diff > sec {

@@ -89,6 +89,3 @@ func ReadGPXDir(trackDir string) {
 		fmt.Println(err)
 	}
 }
-
-// como usar un indice como una cadena de texto
-// https://stackoverflow.com/questions/17573190/how-to-convert-an-integer-to-a-string-in-go
