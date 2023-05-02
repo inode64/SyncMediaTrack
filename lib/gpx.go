@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"time"
 
@@ -65,6 +66,7 @@ func ReadGPX(filename string) {
 
 	var oldtrkptTime time.Time
 	var num int
+	var oldlat, oldlon float64
 
 	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 		if len(trkpt.Time) == 0 {
@@ -85,7 +87,19 @@ func ReadGPX(filename string) {
 			return
 		}
 
+		if !oldtrkptTime.IsZero() {
+			distance := distancePoints(oldlat, oldlon, trkpt.Lat, trkpt.Lon)
+
+			if distance > 21000 {
+				fmt.Println(ColorYellow("Warning: GPX file has a distance between points greater than 1km."))
+				return
+			}
+		}
+
 		oldtrkptTime = trkptTime
+		oldlat = trkpt.Lat
+		oldlon = trkpt.Lon
+
 		num++
 	}
 
@@ -113,4 +127,22 @@ func ReadGPXDir(trackDir string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func distancePoints(lat1, lon1, lat2, lon2 float64) float64 {
+	const earthRadius = 6371000 // meters
+	radiansLat1 := grados2radians(lat1)
+	radiansLon1 := grados2radians(lon1)
+	radiansLat2 := grados2radians(lat2)
+	radiansLon2 := grados2radians(lon2)
+	deltaLat := radiansLat2 - radiansLat1
+	deltaLon := radiansLon2 - radiansLon1
+	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) + math.Cos(radiansLat1)*math.Cos(radiansLat2)*math.Sin(deltaLon/2)*math.Sin(deltaLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	distance := earthRadius * c
+	return distance
+}
+
+func grados2radians(grados float64) float64 {
+	return grados * math.Pi / 180
 }

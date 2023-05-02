@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add default country support to remove geolocation
 - Update tracks with geolocation, date and time
 - Add support for store the old filename in header.name
+- Check if the gpx file has positions further away than 1km
 
 ## [1.2] - 2023-05-01
 
