@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show Warning if GPX file does not have time stamps
 - Fix bad condition to get closes GPS
 - Fix elevation when has decimal values
+- Fix GPX file has time stamps out of order
+- Fix GPX timezone
 
 ### Added
 - Show a notice when gps data is updated

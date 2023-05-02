@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/karrick/godirwalk"
@@ -62,11 +63,35 @@ func ReadGPX(filename string) {
 		return
 	}
 
+	var oldtrkptTime time.Time
+	var num int
+
 	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
-		if len(trkpt.Time) != 0 {
-			DataGPX[filename] = gpx
+		if len(trkpt.Time) == 0 {
+			continue
+		}
+
+		trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
+		if err != nil {
+			continue
+		}
+		trkptTime = UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
+		if trkptTime.IsZero() {
+			continue
+		}
+
+		if num > 0 && trkptTime.Before(oldtrkptTime) {
+			fmt.Println(ColorYellow("Warning: GPX file has time stamps out of order."))
 			return
 		}
+
+		oldtrkptTime = trkptTime
+		num++
+	}
+
+	if num > 0 {
+		DataGPX[filename] = gpx
+		return
 	}
 
 	fmt.Println(ColorYellow("Warning: GPX file does not have time stamps."))
