@@ -106,24 +106,24 @@ func MExecute() {
 			if gpsOld.Lat == 0 && gpsOld.Lon == 0 {
 				fileNoGPS[path] = mediaGPS{Time: date}
 
-				fmt.Printf("No location")
+				fmt.Printf("No location ")
 			} else {
 				fileGPS[path] = mediaGPS{Lat: gpsOld.Lat, Lon: gpsOld.Lon, Ele: gpsOld.Ele, Time: date}
 
-				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
+				fmt.Printf("Lat %v Lon %v Ele %v ", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
 			}
 
 			if !syncmediatrack.GetClosesGPS(date, &location) {
 				if gpsOld.Lat != 0 && gpsOld.Lon != 0 {
 					fmt.Println()
 				} else {
-					fmt.Println(syncmediatrack.ColorRed(" (There is no close time to obtain the GPS position)"))
+					fmt.Println(syncmediatrack.ColorRed("(There is no close time to obtain the GPS position)"))
 				}
 
 				return nil
 			}
 
-			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
+			fmt.Printf("-> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
 
 			if geoservice {
 				loc, _ := syncmediatrack.ReverseLocation(location)
@@ -167,7 +167,7 @@ func MExecute() {
 		fmt.Printf("[%v] - %s - No location -> ", filename, media.Time.Format("02/01/2006 15:04:05"))
 
 		if !getClosesMedia(media, &location) {
-			fmt.Println(syncmediatrack.ColorRed(" (There is no close time to obtain the GPS position)"))
+			fmt.Println(syncmediatrack.ColorRed("(There is no close time to obtain the GPS position)"))
 			continue
 		}
 
