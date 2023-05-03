@@ -96,6 +96,7 @@ func GetMediaDate(filename string, gps *Trkpt) (time.Time, time.Time, time.Time,
 func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	var closestDuration time.Duration
 	var oldtrkptTime time.Time
+	var closestFilename string
 
 	for filename, gpx := range DataGPX {
 		closestDuration = 0
@@ -122,6 +123,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 			if closestDuration == 0 || duration < closestDuration {
 				*closestPoint = trkpt
 				closestDuration = duration
+				closestFilename = filename
 			}
 
 			if isBetween(imageTime, oldtrkptTime, trkptTime) {
@@ -139,7 +141,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	}
 
 	if Verbose && closestDuration.Seconds() < 3600 {
-		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+		fmt.Printf(" Diff.sec (%.0f [%s]) ", closestDuration.Seconds(), closestFilename)
 	}
 
 	if closestDuration.Seconds() > 500 {

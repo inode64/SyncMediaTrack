@@ -218,8 +218,9 @@ func MExecute() {
 
 func getClosesMedia(media mediaGPS, closestPoint *mediaGPS) bool {
 	var closestDuration time.Duration
+	var closestFilename string
 
-	for _, gps := range fileGPS {
+	for filename, gps := range fileGPS {
 		duration := media.Time.Sub(gps.Time)
 		if duration < 0 {
 			duration = -duration
@@ -228,14 +229,15 @@ func getClosesMedia(media mediaGPS, closestPoint *mediaGPS) bool {
 		if closestDuration == 0 || duration < closestDuration {
 			*closestPoint = gps
 			closestDuration = duration
+			closestFilename = filename
 		}
 	}
 
 	if syncmediatrack.Verbose && closestDuration.Seconds() < 3600 {
-		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+		fmt.Printf(" Diff.sec (%.0f [%s]) ", closestDuration.Seconds(), closestFilename)
 	}
 
-	if closestDuration.Seconds() > 180 {
+	if closestDuration.Seconds() > 180 || len(closestFilename) == 0 {
 		return false
 	}
 
