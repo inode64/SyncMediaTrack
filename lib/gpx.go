@@ -43,8 +43,6 @@ func init() {
 }
 
 func ReadGPX(filename string, valid bool) {
-	fmt.Printf("Reading: %v \n", filename)
-
 	mtype, err := mimetype.DetectFile(filename)
 	if err != nil {
 		log.Fatal(ColorRed(err))
@@ -53,6 +51,8 @@ func ReadGPX(filename string, valid bool) {
 	if !mtype.Is("application/gpx+xml") && !mtype.Is("text/xml") {
 		return
 	}
+
+	fmt.Printf("Reading: %v \n", filename)
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -95,7 +95,7 @@ func ReadGPX(filename string, valid bool) {
 		if !oldtrkptTime.IsZero() {
 			distance := distancePoints(oldlat, oldlon, trkpt.Lat, trkpt.Lon)
 
-			if distance > 21000 || !valid {
+			if distance > 1000 || !valid {
 				trackError++
 				fmt.Println(ColorYellow("Warning: GPX file has a distance between points greater than 1km."))
 				return
@@ -185,12 +185,12 @@ func ReadTracks(track string, valid bool) {
 	}
 
 	if len(DataGPX) == 0 {
-		log.Fatal(ColorRed("There is no track processed"))
+		Red("There is no track processed")
 	}
 
-	if trackError != 0 {
-		fmt.Printf(ColorYellow("Processed %d track(s), %d with error(s)\n"), trackValid, trackError)
+	if trackError == 0 {
+		fmt.Printf(ColorGreen("Processed %d track(s)\n"), trackValid)
 	} else {
-		fmt.Printf("Processed %d track(s)\n", trackValid)
+		fmt.Printf(ColorYellow("Processed %d track(s), %d with error(s)\n"), trackValid, trackError)
 	}
 }

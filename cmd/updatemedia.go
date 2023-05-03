@@ -13,8 +13,11 @@ import (
 )
 
 var (
-	gpsOld   syncmediatrack.Trkpt
-	mediaDir string
+	gpsOld      syncmediatrack.Trkpt
+	mediaDir    string
+	mediaValid  int
+	mediaError  int
+	mediaUpdate int
 )
 
 var updateMediaCmd = &cobra.Command{
@@ -42,6 +45,8 @@ func MExecute() {
 
 	syncmediatrack.ReadTracks(track, true)
 
+	fmt.Println("Reading medias...")
+
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			var location syncmediatrack.Trkpt
@@ -54,14 +59,18 @@ func MExecute() {
 				return nil
 			}
 
+			mediaValid++
+
 			relPath, err := filepath.Rel(mediaDir, path)
 			if err != nil {
+				mediaError++
 				return err
 			}
 			fmt.Printf("[%v] - ", relPath)
 
 			atime, etime, gtime, err := syncmediatrack.GetMediaDate(path, &gpsOld)
 			if err != nil {
+				mediaError++
 				fmt.Println(err)
 				return nil
 			}
@@ -104,11 +113,13 @@ func MExecute() {
 				}
 			}
 			if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
-				fmt.Println(syncmediatrack.ColorYellow("(no update)"))
+				fmt.Println("")
 				return nil
 			}
 
 			fmt.Println(syncmediatrack.ColorGreen("(updating)"))
+
+			mediaUpdate++
 
 			if dryRun {
 				return nil
@@ -126,6 +137,18 @@ func MExecute() {
 	})
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	if mediaError == 0 {
+		fmt.Printf(syncmediatrack.ColorGreen("Processed %d media(s)\n"), mediaValid)
+	} else {
+		fmt.Printf(syncmediatrack.ColorYellow("Processed %d media(s), %d with error(s)\n"), mediaValid, mediaError)
+	}
+
+	if mediaError == 0 {
+		fmt.Printf(syncmediatrack.ColorGreen("Updated %d media(s) with GPS position\n"), mediaUpdate)
+	} else {
+		fmt.Println(syncmediatrack.ColorYellow("No media file has been updated with the GPS position"))
 	}
 }
 
