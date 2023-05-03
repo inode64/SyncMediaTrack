@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for store the old filename in header.name
 - Check if the gpx file has positions further away than 1km
 - Adds support to search images with GPS positioning too
+- Warns if the distance is greater than 500 meters in less than 30 seconds
 
 ## [1.2] - 2023-05-01
 

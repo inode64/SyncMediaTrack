@@ -77,11 +77,7 @@ func ReadGPX(filename string, valid bool) {
 			continue
 		}
 
-		trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
-		if err != nil {
-			continue
-		}
-		trkptTime = UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
+		trkptTime := GetTimeFromTrkpt(trkpt)
 		if trkptTime.IsZero() {
 			continue
 		}
@@ -94,10 +90,16 @@ func ReadGPX(filename string, valid bool) {
 
 		if !oldtrkptTime.IsZero() {
 			distance := distancePoints(oldlat, oldlon, trkpt.Lat, trkpt.Lon)
+			duration := trkptTime.Sub(oldtrkptTime)
+			if duration < 0 {
+				duration = -duration
+			}
 
-			if distance > 1000 || !valid {
+			if (distance > 500 && duration.Seconds() < 30) || !valid {
+				fmt.Printf(ColorRed("Distance: %v lat1: %f lon1: %f, lat2: %f lon2:%f sec %f \n"), distance, oldlat, oldlon, trkpt.Lat, trkpt.Lon, duration.Seconds())
+
 				trackError++
-				Warning("Warning: GPX file has a distance between points greater than 1km.")
+				Warning("Warning: GPX file has a distance between points greater than 500 meters.")
 				return
 			}
 		}
@@ -140,7 +142,8 @@ func ReadGPXDir(trackDir string, valid bool) {
 }
 
 func distancePoints(lat1, lon1, lat2, lon2 float64) float64 {
-	const earthRadius = 6371000 // meters
+	// Earth radius in meters
+	const earthRadius = 6371000
 	radiansLat1 := grados2radians(lat1)
 	radiansLon1 := grados2radians(lon1)
 	radiansLat2 := grados2radians(lat2)
