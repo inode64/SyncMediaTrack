@@ -66,6 +66,7 @@ func MExecute() {
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			var location syncmediatrack.Trkpt
+			var gpsOld syncmediatrack.Trkpt
 
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
