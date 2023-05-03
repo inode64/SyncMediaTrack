@@ -12,12 +12,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type mediaGPS struct {
+	Lat  float64
+	Lon  float64
+	Time time.Time
+	Ele  float64
+}
+
 var (
 	gpsOld      syncmediatrack.Trkpt
 	mediaDir    string
 	mediaValid  int
 	mediaError  int
 	mediaUpdate int
+
+	fileGPS   = map[string]mediaGPS{}
+	fileNoGPS = map[string]mediaGPS{}
 )
 
 var updateMediaCmd = &cobra.Command{
@@ -33,8 +43,13 @@ var updateMediaCmd = &cobra.Command{
 	},
 }
 
+// crear una variable para añadir la posicion gps a los ficheros usando como indice el nombre de fichero
+
 func init() {
 	rootCmd.AddCommand(updateMediaCmd)
+
+	fileGPS = make(map[string]mediaGPS)
+	fileNoGPS = make(map[string]mediaGPS)
 }
 
 func MExecute() {
@@ -46,6 +61,7 @@ func MExecute() {
 	syncmediatrack.ReadTracks(track, true)
 
 	syncmediatrack.Pass("Reading medias...")
+	syncmediatrack.Pass("First pass...")
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
@@ -88,8 +104,12 @@ func MExecute() {
 			fmt.Printf("| ")
 
 			if gpsOld.Lat == 0 && gpsOld.Lon == 0 {
+				fileNoGPS[path] = mediaGPS{Time: date}
+
 				fmt.Printf("No location")
 			} else {
+				fileGPS[path] = mediaGPS{Lat: gpsOld.Lat, Lon: gpsOld.Lon, Ele: gpsOld.Ele, Time: date}
+
 				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
 			}
 
@@ -135,7 +155,52 @@ func MExecute() {
 		Unsorted: false,
 	})
 	if err != nil {
-		fmt.Println(err)
+		syncmediatrack.Warning(err.Error())
+	}
+
+	syncmediatrack.Pass("Second pass...")
+
+	for filename, media := range fileNoGPS {
+		var location mediaGPS
+		var tlocation syncmediatrack.Trkpt
+
+		fmt.Printf("[%v] - %s - No location -> ", filename, media.Time.Format("02/01/2006 15:04:05"))
+
+		if !getClosesMedia(media, &location) {
+			fmt.Println(syncmediatrack.ColorRed(" (There is no close time to obtain the GPS position)"))
+			continue
+		}
+
+		fmt.Printf("Lat %v Lon %v Ele %v ", media.Lat, media.Lon, media.Ele)
+
+		tlocation.Lat = location.Lat
+		tlocation.Lon = location.Lon
+		tlocation.Ele = location.Ele
+		tlocation.Time = location.Time.Format("2006-01-02T15:04:05Z")
+
+		if geoservice {
+			loc, _ := syncmediatrack.ReverseLocation(tlocation)
+			if len(loc) != 0 {
+				fmt.Printf("(%s)", syncmediatrack.ColorGreen(loc))
+			}
+		}
+		if !force && gpsOld.Lat != 0 && gpsOld.Lon != 0 {
+			fmt.Println("")
+			continue
+		}
+
+		fmt.Println(syncmediatrack.ColorGreen("(updating)"))
+
+		mediaUpdate++
+
+		if dryRun {
+			continue
+		}
+
+		err = syncmediatrack.WriteGPS(tlocation, filename)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	if mediaError == 0 {
@@ -149,6 +214,32 @@ func MExecute() {
 	} else {
 		fmt.Println(syncmediatrack.ColorYellow("No media file has been updated with the GPS position"))
 	}
+}
+
+func getClosesMedia(media mediaGPS, closestPoint *mediaGPS) bool {
+	var closestDuration time.Duration
+
+	for _, gps := range fileGPS {
+		duration := media.Time.Sub(gps.Time)
+		if duration < 0 {
+			duration = -duration
+		}
+
+		if closestDuration == 0 || duration < closestDuration {
+			*closestPoint = gps
+			closestDuration = duration
+		}
+	}
+
+	if syncmediatrack.Verbose && closestDuration.Seconds() < 3600 {
+		fmt.Printf(" Diff.sec (%.0f) ", closestDuration.Seconds())
+	}
+
+	if closestDuration.Seconds() > 180 {
+		return false
+	}
+
+	return true
 }
 
 func bestDate(atime time.Time, etime time.Time, gtime time.Time) time.Time {
