@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"math"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -42,22 +40,9 @@ func MExecute() {
 		fmt.Println(syncmediatrack.ColorRed("Ffmpeg is not installed, checking the GPS position and time of Gopro videos will not be performed"))
 	}
 
-	fileInfo, err := os.Stat(track)
-	if err != nil {
-		log.Fatal(syncmediatrack.ColorRed("No open GPX path"))
-	}
+	syncmediatrack.ReadTracks(track, true)
 
-	if fileInfo.IsDir() {
-		syncmediatrack.ReadGPXDir(track)
-	} else {
-		syncmediatrack.ReadGPX(track)
-	}
-
-	if len(syncmediatrack.DataGPX) == 0 {
-		log.Fatal(syncmediatrack.ColorRed("There is no track processed"))
-	}
-
-	err = godirwalk.Walk(mediaDir, &godirwalk.Options{
+	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			var location syncmediatrack.Trkpt
 

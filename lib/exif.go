@@ -104,12 +104,12 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		first := gpx.Trk.Trkseg.Trkpt[0]
 		last := gpx.Trk.Trkseg.Trkpt[len(gpx.Trk.Trkseg.Trkpt)-1]
 
-		if !isBetween(imageTime, getTimeFromTrkpt(first), getTimeFromTrkpt(last)) {
+		if !isBetween(imageTime, GetTimeFromTrkpt(first), GetTimeFromTrkpt(last)) {
 			continue
 		}
 
 		for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
-			trkptTime := getTimeFromTrkpt(trkpt)
+			trkptTime := GetTimeFromTrkpt(trkpt)
 			if trkptTime.IsZero() {
 				continue
 			}
@@ -147,19 +147,6 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 	}
 
 	return true
-}
-
-func getTimeFromTrkpt(trkpt Trkpt) time.Time {
-	if len(trkpt.Time) == 0 {
-		return time.Time{}
-	}
-
-	t, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
-	if err != nil {
-		return time.Time{}
-	}
-
-	return UpdateGPSDateTime(t, trkpt.Lat, trkpt.Lon)
 }
 
 func isBetween(date, start, end time.Time) bool {

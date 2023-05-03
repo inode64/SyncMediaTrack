@@ -3,10 +3,8 @@ package cmd
 import (
 	"encoding/xml"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
 	"github.com/spf13/cobra"
@@ -33,20 +31,7 @@ func init() {
 }
 
 func updateTrackExecute() {
-	fileInfo, err := os.Stat(track)
-	if err != nil {
-		log.Fatal(syncmediatrack.ColorRed("No open GPX path"))
-	}
-
-	if fileInfo.IsDir() {
-		syncmediatrack.ReadGPXDir(track)
-	} else {
-		syncmediatrack.ReadGPX(track)
-	}
-
-	if len(syncmediatrack.DataGPX) == 0 {
-		log.Fatal(syncmediatrack.ColorRed("There is no track processed"))
-	}
+	syncmediatrack.ReadTracks(track, false)
 
 	for filename, gpx := range syncmediatrack.DataGPX {
 		// split path and basename from filename
@@ -56,19 +41,10 @@ func updateTrackExecute() {
 		fmt.Printf("[%v] -> ", basename)
 
 		trkpt := GetPosFromGPX(gpx)
-		if len(trkpt.Time) == 0 {
-			fmt.Println(syncmediatrack.ColorRed(err))
-
+		trkptTime := syncmediatrack.GetTimeFromTrkpt(trkpt)
+		if trkptTime.IsZero() {
 			continue
 		}
-
-		trkptTime, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
-		if err != nil {
-			fmt.Println(syncmediatrack.ColorRed(err))
-
-			continue
-		}
-		trkptTime = syncmediatrack.UpdateGPSDateTime(trkptTime, trkpt.Lat, trkpt.Lon)
 
 		newfilename := trkptTime.Format("2006_01_02_15_04_mon")
 
@@ -92,7 +68,7 @@ func updateTrackExecute() {
 			continue
 		}
 
-		_, err = os.Stat(fmt.Sprintf("%s/%s", path, newfilename))
+		_, err := os.Stat(fmt.Sprintf("%s/%s", path, newfilename))
 		if err == nil {
 			fmt.Println(syncmediatrack.ColorRed(" (File already exists, no update)"))
 

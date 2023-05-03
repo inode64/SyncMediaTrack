@@ -32,13 +32,17 @@ type Trkpt struct {
 	Ele  float64 `xml:"ele"`
 }
 
-var DataGPX map[string]Gpx
+var (
+	DataGPX    map[string]Gpx
+	trackValid int
+	trackError int
+)
 
 func init() {
 	DataGPX = make(map[string]Gpx)
 }
 
-func ReadGPX(filename string) {
+func ReadGPX(filename string, valid bool) {
 	fmt.Printf("Reading: %v \n", filename)
 
 	mtype, err := mimetype.DetectFile(filename)
@@ -83,6 +87,7 @@ func ReadGPX(filename string) {
 		}
 
 		if num > 0 && trkptTime.Before(oldtrkptTime) {
+			trackError++
 			fmt.Println(ColorYellow("Warning: GPX file has time stamps out of order."))
 			return
 		}
@@ -90,7 +95,8 @@ func ReadGPX(filename string) {
 		if !oldtrkptTime.IsZero() {
 			distance := distancePoints(oldlat, oldlon, trkpt.Lat, trkpt.Lon)
 
-			if distance > 21000 {
+			if distance > 21000 || !valid {
+				trackError++
 				fmt.Println(ColorYellow("Warning: GPX file has a distance between points greater than 1km."))
 				return
 			}
@@ -103,22 +109,26 @@ func ReadGPX(filename string) {
 		num++
 	}
 
-	if num > 0 {
+	if num > 0 || !valid {
+		trackValid++
+
 		DataGPX[filename] = gpx
 		return
 	}
 
+	trackError++
+
 	fmt.Println(ColorYellow("Warning: GPX file does not have time stamps."))
 }
 
-func ReadGPXDir(trackDir string) {
+func ReadGPXDir(trackDir string, valid bool) {
 	err := godirwalk.Walk(trackDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			if de.IsDir() {
 				return nil // do not remove directory that was provided top-level directory
 			}
 
-			ReadGPX(path)
+			ReadGPX(path, valid)
 
 			return nil
 		},
@@ -145,4 +155,42 @@ func distancePoints(lat1, lon1, lat2, lon2 float64) float64 {
 
 func grados2radians(grados float64) float64 {
 	return grados * math.Pi / 180
+}
+
+func GetTimeFromTrkpt(trkpt Trkpt) time.Time {
+	if len(trkpt.Time) == 0 {
+		return time.Time{}
+	}
+
+	t, err := time.Parse("2006-01-02T15:04:05Z", trkpt.Time)
+	if err != nil {
+		return time.Time{}
+	}
+
+	return UpdateGPSDateTime(t, trkpt.Lat, trkpt.Lon)
+}
+
+func ReadTracks(track string, valid bool) {
+	fileInfo, err := os.Stat(track)
+	if err != nil {
+		log.Fatal(ColorRed("No open GPX path"))
+	}
+
+	fmt.Println("Reading tracks...")
+
+	if fileInfo.IsDir() {
+		ReadGPXDir(track, valid)
+	} else {
+		ReadGPX(track, valid)
+	}
+
+	if len(DataGPX) == 0 {
+		log.Fatal(ColorRed("There is no track processed"))
+	}
+
+	if trackError != 0 {
+		fmt.Printf(ColorYellow("Processed %d track(s), %d with error(s)\n"), trackValid, trackError)
+	} else {
+		fmt.Printf("Processed %d track(s)\n", trackValid)
+	}
 }
