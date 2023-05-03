@@ -88,7 +88,7 @@ func ReadGPX(filename string, valid bool) {
 
 		if num > 0 && trkptTime.Before(oldtrkptTime) {
 			trackError++
-			fmt.Println(ColorYellow("Warning: GPX file has time stamps out of order."))
+			Warning("Warning: GPX file has time stamps out of order.")
 			return
 		}
 
@@ -97,7 +97,7 @@ func ReadGPX(filename string, valid bool) {
 
 			if distance > 1000 || !valid {
 				trackError++
-				fmt.Println(ColorYellow("Warning: GPX file has a distance between points greater than 1km."))
+				Warning("Warning: GPX file has a distance between points greater than 1km.")
 				return
 			}
 		}
@@ -176,7 +176,7 @@ func ReadTracks(track string, valid bool) {
 		log.Fatal(ColorRed("No open GPX path"))
 	}
 
-	fmt.Println("Reading tracks...")
+	Pass("Reading tracks...")
 
 	if fileInfo.IsDir() {
 		ReadGPXDir(track, valid)
@@ -185,7 +185,7 @@ func ReadTracks(track string, valid bool) {
 	}
 
 	if len(DataGPX) == 0 {
-		Red("There is no track processed")
+		Warning("There is no track processed")
 	}
 
 	if trackError == 0 {

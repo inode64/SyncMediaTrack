@@ -43,6 +43,7 @@ func updateTrackExecute() {
 		trkpt := GetPosFromGPX(gpx)
 		trkptTime := syncmediatrack.GetTimeFromTrkpt(trkpt)
 		if trkptTime.IsZero() {
+			syncmediatrack.Warning("No time found in GPX file")
 			continue
 		}
 

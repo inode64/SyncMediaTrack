@@ -40,12 +40,12 @@ func init() {
 func MExecute() {
 	// check if ffmpeg is installed
 	if !FfmpegInstalled() {
-		fmt.Println(syncmediatrack.ColorRed("Ffmpeg is not installed, checking the GPS position and time of Gopro videos will not be performed"))
+		syncmediatrack.Warning("Ffmpeg is not installed, checking the GPS position and time of Gopro videos will not be performed")
 	}
 
 	syncmediatrack.ReadTracks(track, true)
 
-	fmt.Println("Reading medias...")
+	syncmediatrack.Pass("Reading medias...")
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
@@ -92,19 +92,18 @@ func MExecute() {
 			} else {
 				fmt.Printf("Lat %v Lon %v Ele %v", gpsOld.Lat, gpsOld.Lon, gpsOld.Ele)
 			}
-			fmt.Printf(" -> ")
 
 			if !syncmediatrack.GetClosesGPS(date, &location) {
 				if gpsOld.Lat != 0 && gpsOld.Lon != 0 {
-					fmt.Println(syncmediatrack.ColorYellow("Update not necessary"))
+					fmt.Println()
 				} else {
-					fmt.Println(syncmediatrack.ColorRed("There is no close time to obtain the GPS position"))
+					fmt.Println(syncmediatrack.ColorRed(" (There is no close time to obtain the GPS position)"))
 				}
 
 				return nil
 			}
 
-			fmt.Printf("Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
+			fmt.Printf(" -> Lat %v Lon %v Ele %v ", location.Lat, location.Lon, location.Ele)
 
 			if geoservice {
 				loc, _ := syncmediatrack.ReverseLocation(location)
