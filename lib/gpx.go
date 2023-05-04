@@ -71,6 +71,7 @@ func ReadGPX(filename string, valid bool) {
 	var oldtrkptTime time.Time
 	var num int
 	var oldlat, oldlon float64
+	var stopshow bool
 
 	for _, trkpt := range gpx.Trk.Trkseg.Trkpt {
 		if len(trkpt.Time) == 0 {
@@ -83,9 +84,14 @@ func ReadGPX(filename string, valid bool) {
 		}
 
 		if num > 0 && trkptTime.Before(oldtrkptTime) {
-			trackError++
-			Warning("Warning: GPX file has time stamps out of order.")
-			return
+			if !stopshow {
+				trackError++
+				Warning("Warning: GPX file has time stamps out of order.")
+				if valid {
+					return
+				}
+			}
+			stopshow = true
 		}
 
 		if !oldtrkptTime.IsZero() {
@@ -95,12 +101,11 @@ func ReadGPX(filename string, valid bool) {
 				duration = -duration
 			}
 
-			if (distance > 500 && duration.Seconds() < 30) || !valid {
+			if distance > 500 && duration.Seconds() < 30 {
 				fmt.Printf(ColorRed("Distance: %v lat1: %f lon1: %f, lat2: %f lon2:%f sec %f \n"), distance, oldlat, oldlon, trkpt.Lat, trkpt.Lon, duration.Seconds())
 
 				trackError++
 				Warning("Warning: GPX file has a distance between points greater than 500 meters.")
-				return
 			}
 		}
 

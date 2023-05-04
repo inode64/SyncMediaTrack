@@ -27,11 +27,30 @@ In **Windows** you need to copy the _ffmpeg_ and _ffprobe_ executable to some di
 ## 5) Run from command-line SyncMediaTrack
 First it is advisable to check that the images are well located,
 ```
-SyncMediaTrack --dry-run --geoservice --track XXXX.gpx photos/Andorra
+SyncMediaTrack updatemedia --dry-run --geoservice --track XXXX.gpx photos/Andorra
 ```
 Once we have verified that everything is correct we can execute it again adding the correct geographic positions
 ```
-SyncMediaTrack --track XXXX.gpx photos/Andorra
+SyncMediaTrack updatemedia --track XXXX.gpx photos/Andorra
+```
+
+# Reorganize your tracks
+
+If you have several tracks you can reorganize them chronologically and geolocalized with the following command
+```
+SyncMediaTrack updatetrack --track <trackdir or gpx file> ---geoservice 
+```
+
+### show results
+
+```
+[2023-03-26_09-59_Sun.gpx] -> 2023_03_26_09_59_mon_Fanlo Aragón España.gpx
+[Les preses limpio.gpx] -> 2023_03_05_09_46_mon_la Vall d'en Bas España.gpx
+[Move_2019_09_08_17_47_49_Ciclismo.gpx] -> 2019_09_08_17_48_mon_Orpesa _ Oropesa del Mar España.gpx
+[Mulacen2.gpx] -> No time found in GPX file
+[TrackWaypoint.gpx] -> No time found in GPX file
+[benicasim-cueva-de-la-seda-23-06-2020.gpx] -> 2020_06_23_08_41_mon_Benicàssim _ Benicasim España.gpx
+[cedraman-castillo-de-villamalefa-por-gp-rio-villahermosa-ced.gpx] -> 2019_06_29_10_11_mon_Castillo de Villamalefa España.gpx
 ```
 
 ---
@@ -83,3 +102,9 @@ which says at which location you were at a precise time.
 </trkseg>
 ...
 ```
+
+# TODO
+
+* [ ] Add support for read GPS Time from Gopro Video
+* [ ] Fix GPX file when position is more than 500m away
+* [ ] Fix GPX file when date mismatch or disordered
