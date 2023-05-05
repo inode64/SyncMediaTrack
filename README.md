@@ -110,3 +110,4 @@ which says at which location you were at a precise time.
 * [ ] Fix GPX file when date mismatch or disordered
 * [ ] Update elevation from DEM (https://github.com/lukeroth/gdal)
 * [ ] Support viper for configuration files (https://github.com/spf13/viper)
+* [ ] Sort tracks by type of activity, hiking, running, cycling
