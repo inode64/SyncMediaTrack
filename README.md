@@ -109,3 +109,4 @@ which says at which location you were at a precise time.
 * [ ] Fix GPX file when position is more than 500m away
 * [ ] Fix GPX file when date mismatch or disordered
 * [ ] Update elevation from DEM (https://github.com/lukeroth/gdal)
+* [ ] Support viper for configuration files (https://github.com/spf13/viper)
