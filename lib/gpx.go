@@ -149,10 +149,10 @@ func ReadGPXDir(trackDir string, valid bool) {
 func distancePoints(lat1, lon1, lat2, lon2 float64) float64 {
 	// Earth radius in meters
 	const earthRadius = 6371000
-	radiansLat1 := grados2radians(lat1)
-	radiansLon1 := grados2radians(lon1)
-	radiansLat2 := grados2radians(lat2)
-	radiansLon2 := grados2radians(lon2)
+	radiansLat1 := degrees2radians(lat1)
+	radiansLon1 := degrees2radians(lon1)
+	radiansLat2 := degrees2radians(lat2)
+	radiansLon2 := degrees2radians(lon2)
 	deltaLat := radiansLat2 - radiansLat1
 	deltaLon := radiansLon2 - radiansLon1
 	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) + math.Cos(radiansLat1)*math.Cos(radiansLat2)*math.Sin(deltaLon/2)*math.Sin(deltaLon/2)
@@ -161,8 +161,8 @@ func distancePoints(lat1, lon1, lat2, lon2 float64) float64 {
 	return distance
 }
 
-func grados2radians(grados float64) float64 {
-	return grados * math.Pi / 180
+func degrees2radians(degrees float64) float64 {
+	return degrees * math.Pi / 180
 }
 
 func GetTimeFromTrkpt(trkpt Trkpt) time.Time {
