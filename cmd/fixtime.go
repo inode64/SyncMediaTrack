@@ -25,7 +25,7 @@ var imageFile = map[string]ImageInfo{}
 var fixTimeCmd = &cobra.Command{
 	Use:   "fixtime",
 	Short: "Fix time in image files",
-	Long:  `Fix time in image file using GEO data and other proximity images`,
+	Long:  `Corrects time in image files using GEO data and other adjacent images to correct time shift`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 1 {
 			mediaDir = args[0]
