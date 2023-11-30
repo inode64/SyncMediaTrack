@@ -83,4 +83,6 @@ func fixTimeExecute() {
 	if err != nil {
 		syncmediatrack.Warning(err.Error())
 	}
+
+	syncmediatrack.Pass("Second pass...")
 }
