@@ -20,9 +20,7 @@ type ImageInfo struct {
 	IsAdjusted   bool
 }
 
-var (
-	imageFile = map[string]ImageInfo{}
-)
+var imageFile = map[string]ImageInfo{}
 
 var fixTimeCmd = &cobra.Command{
 	Use:   "fixtime",
