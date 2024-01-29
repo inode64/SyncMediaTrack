@@ -47,6 +47,7 @@ func fixTimeExecute() {
 
 	re := regexp.MustCompile(`([A-Za-z-_]*)(\d[\w.-]*)(\.[\w]+)$`)
 	var split []string
+	var src time.Time
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
@@ -88,6 +89,18 @@ func fixTimeExecute() {
 				etime.Format("02/01/2006 15:04:05"),
 				gtime.Format("02/01/2006 15:04:05"),
 			)
+
+			if !etime.IsZero() {
+				src = etime
+			} else {
+				src = atime
+			}
+
+			if !gtime.IsZero() {
+				// diff times and adjust
+				diff := gtime.Sub(src)
+				fmt.Printf(" Diff: %s", diff.String())
+			}
 
 			fmt.Println()
 
