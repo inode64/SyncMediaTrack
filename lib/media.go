@@ -12,7 +12,7 @@ func FileIsMedia(filename string) bool {
 		return false
 	}
 
-	return strings.Contains(mtype.String(), "video/") || strings.Contains(mtype.String(), "image/")
+	return strings.Contains(mtype.String(), "video/") || strings.Contains(mtype.String(), "image/") || strings.Contains(mtype.String(), "audio/")
 }
 
 func FileIsVideo(filename string) bool {
