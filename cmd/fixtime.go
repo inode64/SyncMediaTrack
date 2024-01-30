@@ -22,6 +22,7 @@ type ImageInfo struct {
 }
 
 var imageFile = map[string][]ImageInfo{}
+var DenyExtension = []string{"LRV", "THM"}
 
 var fixTimeCmd = &cobra.Command{
 	Use:   "fixtime",
@@ -47,6 +48,7 @@ func fixTimeExecute() {
 
 	re := regexp.MustCompile(`([A-Za-z-_]*)(\d[\w.-]*)(\.[\w]+)$`)
 	var split []string
+	var id string
 	var src time.Time
 
 	err := godirwalk.Walk(mediaDir, &godirwalk.Options{
@@ -61,14 +63,18 @@ func fixTimeExecute() {
 				return nil
 			}
 
-			mediaValid++
-
 			relPath, err := filepath.Rel(mediaDir, path)
 			if err != nil {
 				mediaError++
 				return err
 			}
-			fmt.Printf("[%v] - ", relPath)
+
+			// Exclude extension to analyze
+			for _, ext := range DenyExtension {
+				if filepath.Ext(path) == "."+ext {
+					return nil
+				}
+			}
 
 			atime, etime, gtime, err := syncmediatrack.GetMediaDate(path, &gpsOld)
 			if err != nil {
@@ -78,13 +84,23 @@ func fixTimeExecute() {
 			}
 
 			split = re.FindStringSubmatch(relPath)
+			mediaValid++
+			fmt.Printf("[%v] - ", relPath)
 
 			if len(split) < 2 {
+				mediaError++
+				fmt.Println(" - Error: Can't get file ID")
 				return nil
 			}
 
+			id = split[2]
+			// If the file start with GL o GX (GOPRO Files) remove 2 first characters from id
+			if split[1] == "GL" || split[1] == "GX" {
+				id = id[2:]
+			}
+
 			fmt.Printf(" ID: %s A: %s E: %s G: %s",
-				split[2],
+				id,
 				atime.Format("02/01/2006 15:04:05"),
 				etime.Format("02/01/2006 15:04:05"),
 				gtime.Format("02/01/2006 15:04:05"),
@@ -104,7 +120,7 @@ func fixTimeExecute() {
 
 			fmt.Println()
 
-			imageFile[split[2]] = append(imageFile[split[2]], ImageInfo{Path: path, atime: atime, etime: etime, gtime: gtime})
+			imageFile[id] = append(imageFile[id], ImageInfo{Path: path, atime: atime, etime: etime, gtime: gtime})
 
 			mediaUpdate++
 
