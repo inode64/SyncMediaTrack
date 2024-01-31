@@ -21,6 +21,14 @@ type ImageInfo struct {
 	IsAdjusted   bool
 }
 
+type Segment struct {
+	Diff      time.Duration
+	StartTime time.Time
+	EndTime   time.Time
+	Id        []string
+}
+
+var MaxTimeSegment = time.Duration(3600 * 4) // 4 hours
 var imageFile = map[string][]ImageInfo{}
 var DenyExtension = []string{"LRV", "THM"}
 
@@ -34,6 +42,16 @@ var fixTimeCmd = &cobra.Command{
 		}
 		fixTimeExecute()
 	},
+}
+
+func GetTime(atime time.Time, etime time.Time, gtime time.Time) time.Time {
+	if !gtime.IsZero() {
+		return gtime
+	}
+	if !etime.IsZero() {
+		return gtime
+	}
+	return atime
 }
 
 func init() {
@@ -139,6 +157,44 @@ func fixTimeExecute() {
 		for _, value1 := range value {
 			// Show path and date from ImageInfo
 			fmt.Printf("Path: %s\n", value1.Path)
+		}
+	}
+
+	seg := []Segment{}
+	oldTime := time.Time{}
+	Id := []string{}
+	StoredTime := time.Time{}
+	StartTime := time.Time{}
+	EndTime := time.Time{}
+	Diff := time.Duration(0)
+
+	for key, value := range imageFile {
+		StoredTime = GetTime(value[0].atime, value[0].etime, value[0].etime)
+		if (oldTime != time.Time{}) {
+			if StoredTime.Sub(oldTime) > MaxTimeSegment {
+				seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
+				Id = []string{}
+				oldTime = time.Time{}
+				StartTime = StoredTime
+			}
+		} else {
+			StartTime = StoredTime
+		}
+
+		Id = append(Id, key)
+		if !value[0].gtime.IsZero() {
+			Diff1 := StoredTime.Sub(value[0].gtime)
+			Diff = (Diff + Diff1) / 2
+		}
+	}
+
+	for key, value := range seg {
+		fmt.Printf("Segment: %d\n", key)
+		fmt.Printf("Start: %s\n", value.StartTime.Format("02/01/2006 15:04:05"))
+		fmt.Printf("End: %s\n", value.EndTime.Format("02/01/2006 15:04:05"))
+		fmt.Printf("Diff: %s\n", value.Diff.String())
+		for _, value1 := range value.Id {
+			fmt.Printf("Id: %s\n", value1)
 		}
 	}
 }
