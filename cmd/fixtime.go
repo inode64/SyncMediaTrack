@@ -180,7 +180,7 @@ func fixTimeExecute() {
 		} else {
 			StartTime = StoredTime
 		}
-
+		oldTime = StoredTime
 		Id = append(Id, key)
 		if !value[0].gtime.IsZero() {
 			Diff1 := StoredTime.Sub(value[0].gtime)
