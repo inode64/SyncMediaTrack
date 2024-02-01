@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -29,7 +30,7 @@ type Segment struct {
 	Id        []string
 }
 
-var MaxTimeSegment = time.Duration(3600 * 4) // 4 hours
+var MaxTimeSegment float64 = 60 * 4 // 4 hours
 var imageFile = map[string][]ImageInfo{}
 var DenyExtension = []string{"LRV", "THM"}
 
@@ -179,7 +180,8 @@ func fixTimeExecute() {
 	for _, k := range Ids {
 		StoredTime = GetTime(imageFile[k][0].atime, imageFile[k][0].etime, imageFile[k][0].etime)
 		if (oldTime != time.Time{}) {
-			if StoredTime.Sub(oldTime) > MaxTimeSegment {
+			t := StoredTime.Sub(oldTime)
+			if math.Abs(t.Minutes()) > MaxTimeSegment || oldTime.After(StoredTime) {
 				seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
 				Id = []string{}
 				oldTime = time.Time{}
@@ -194,6 +196,9 @@ func fixTimeExecute() {
 			Diff1 := StoredTime.Sub(imageFile[k][0].gtime)
 			Diff = (Diff + Diff1) / 2
 		}
+	}
+	if len(Id) > 0 {
+		seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
 	}
 
 	for key, value := range seg {
