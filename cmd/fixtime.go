@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"time"
 
 	syncmediatrack "github.com/inode64/SyncMediaTrack/lib"
@@ -152,9 +153,16 @@ func fixTimeExecute() {
 
 	syncmediatrack.Pass("Second pass...")
 
-	for key, value := range imageFile {
-		fmt.Printf("Clave: %s\n", key)
-		for _, value1 := range value {
+	var Ids []string
+	for k := range imageFile {
+		Ids = append(Ids, k)
+	}
+
+	sort.Strings(Ids)
+
+	for _, k := range Ids {
+		fmt.Printf("Clave: %s\n", k)
+		for _, value1 := range imageFile[k] {
 			// Show path and date from ImageInfo
 			fmt.Printf("Path: %s\n", value1.Path)
 		}
@@ -168,8 +176,8 @@ func fixTimeExecute() {
 	EndTime := time.Time{}
 	Diff := time.Duration(0)
 
-	for key, value := range imageFile {
-		StoredTime = GetTime(value[0].atime, value[0].etime, value[0].etime)
+	for _, k := range Ids {
+		StoredTime = GetTime(imageFile[k][0].atime, imageFile[k][0].etime, imageFile[k][0].etime)
 		if (oldTime != time.Time{}) {
 			if StoredTime.Sub(oldTime) > MaxTimeSegment {
 				seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
@@ -181,9 +189,9 @@ func fixTimeExecute() {
 			StartTime = StoredTime
 		}
 		oldTime = StoredTime
-		Id = append(Id, key)
-		if !value[0].gtime.IsZero() {
-			Diff1 := StoredTime.Sub(value[0].gtime)
+		Id = append(Id, k)
+		if !imageFile[k][0].gtime.IsZero() {
+			Diff1 := StoredTime.Sub(imageFile[k][0].gtime)
 			Diff = (Diff + Diff1) / 2
 		}
 	}
