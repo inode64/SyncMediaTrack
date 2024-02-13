@@ -118,6 +118,12 @@ func ReadGPX(filename string, valid bool) {
 
 	if num > 0 || !valid {
 		trackValid++
+		if Verbose {
+			// Print first and last time stamp
+			first := gpx.Trk.Trkseg.Trkpt[0]
+			last := gpx.Trk.Trkseg.Trkpt[len(gpx.Trk.Trkseg.Trkpt)-1]
+			fmt.Printf("First: %v Last: %v\n", GetTimeFromTrkpt(first), GetTimeFromTrkpt(last))
+		}
 
 		DataGPX[filename] = gpx
 		return
