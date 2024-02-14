@@ -156,6 +156,9 @@ func isBetween(date, start, end time.Time) bool {
 		return false
 	}
 
+	// remove timezone from time
+	date, _ = time.Parse("2006-01-02 15:04:05", date.Format("2006-01-02 15:04:05"))
+
 	return (date.Equal(start) || date.After(start)) && (date.Equal(end) || date.Before(end))
 }
 
@@ -267,10 +270,5 @@ func UpdateGPSDateTime(gpsDateTime time.Time, lat float64, lon float64) time.Tim
 		return gpsDateTime
 	}
 
-	trkptTime := gpsDateTime.In(loc)
-
-	// remove timezone from time
-	trkptTime, _ = time.Parse("2006-01-02 15:04:05", trkptTime.Format("2006-01-02 15:04:05"))
-
-	return trkptTime
+	return gpsDateTime.In(loc)
 }
