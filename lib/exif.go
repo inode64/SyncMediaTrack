@@ -21,6 +21,8 @@ var (
 	finder  tzf.F
 )
 
+const MaxTime = 500
+
 func init() {
 	var err error
 	finder, err = tzf.NewDefaultFinder()
@@ -102,10 +104,10 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		closestDuration = 0
 		oldtrkptTime = time.Time{}
 
-		first := gpx.Trk.Trkseg.Trkpt[0]
-		last := gpx.Trk.Trkseg.Trkpt[len(gpx.Trk.Trkseg.Trkpt)-1]
+		first := GetTimeFromTrkpt(gpx.Trk.Trkseg.Trkpt[0]).Add(-MaxTime * time.Second)
+		last := GetTimeFromTrkpt(gpx.Trk.Trkseg.Trkpt[len(gpx.Trk.Trkseg.Trkpt)-1]).Add(MaxTime * time.Second)
 
-		if !isBetween(imageTime, GetTimeFromTrkpt(first), GetTimeFromTrkpt(last)) {
+		if !isBetween(imageTime, first, last) {
 			continue
 		}
 
@@ -144,7 +146,7 @@ func GetClosesGPS(imageTime time.Time, closestPoint *Trkpt) bool {
 		fmt.Printf(" Diff.sec (%.0f [%s]) ", closestDuration.Seconds(), closestFilename)
 	}
 
-	if closestDuration.Seconds() > 500 {
+	if closestDuration.Seconds() > MaxTime {
 		return false
 	}
 
