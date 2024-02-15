@@ -17,7 +17,6 @@ func init() {
 }
 
 func TestUpdateGPSDateTime(t *testing.T) {
-
 	t.Run("TestUpdateGPSDateTime", func(t *testing.T) {
 		gTime, _ := time.Parse("2006:01:02 15:04:05Z", "2024:01:28 07:46:21Z")
 

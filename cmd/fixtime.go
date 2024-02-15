@@ -27,12 +27,14 @@ type Segment struct {
 	Diff      time.Duration
 	StartTime time.Time
 	EndTime   time.Time
-	Id        []string
+	ID        []string
 }
 
-var MaxTimeSegment float64 = 60 * 4 // 4 hours
-var imageFile = map[string][]ImageInfo{}
-var DenyExtension = []string{"LRV", "THM"}
+var (
+	MaxTimeSegment float64 = 60 * 4 // 4 hours
+	imageFile              = map[string][]ImageInfo{}
+	DenyExtension          = []string{"LRV", "THM"}
+)
 
 var fixTimeCmd = &cobra.Command{
 	Use:   "fixtime",
@@ -154,14 +156,14 @@ func fixTimeExecute() {
 
 	syncmediatrack.Pass("Second pass...")
 
-	var Ids []string
+	var ids []string
 	for k := range imageFile {
-		Ids = append(Ids, k)
+		ids = append(ids, k)
 	}
 
-	sort.Strings(Ids)
+	sort.Strings(ids)
 
-	for _, k := range Ids {
+	for _, k := range ids {
 		fmt.Printf("Clave: %s\n", k)
 		for _, value1 := range imageFile[k] {
 			// Show path and date from ImageInfo
@@ -171,19 +173,19 @@ func fixTimeExecute() {
 
 	seg := []Segment{}
 	oldTime := time.Time{}
-	Id := []string{}
+	ID := []string{}
 	StoredTime := time.Time{}
 	StartTime := time.Time{}
 	EndTime := time.Time{}
 	Diff := time.Duration(0)
 
-	for _, k := range Ids {
+	for _, k := range ids {
 		StoredTime = GetTime(imageFile[k][0].atime, imageFile[k][0].etime, imageFile[k][0].etime)
 		if (oldTime != time.Time{}) {
 			t := StoredTime.Sub(oldTime)
 			if math.Abs(t.Minutes()) > MaxTimeSegment || oldTime.After(StoredTime) {
-				seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
-				Id = []string{}
+				seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, ID: ID})
+				ID = []string{}
 				oldTime = time.Time{}
 				StartTime = StoredTime
 			}
@@ -191,14 +193,14 @@ func fixTimeExecute() {
 			StartTime = StoredTime
 		}
 		oldTime = StoredTime
-		Id = append(Id, k)
+		ID = append(ID, k)
 		if !imageFile[k][0].gtime.IsZero() {
 			Diff1 := StoredTime.Sub(imageFile[k][0].gtime)
 			Diff = (Diff + Diff1) / 2
 		}
 	}
-	if len(Id) > 0 {
-		seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, Id: Id})
+	if len(ID) > 0 {
+		seg = append(seg, Segment{Diff: Diff, StartTime: StartTime, EndTime: EndTime, ID: ID})
 	}
 
 	for key, value := range seg {
@@ -206,8 +208,8 @@ func fixTimeExecute() {
 		fmt.Printf("Start: %s\n", value.StartTime.Format("02/01/2006 15:04:05"))
 		fmt.Printf("End: %s\n", value.EndTime.Format("02/01/2006 15:04:05"))
 		fmt.Printf("Diff: %s\n", value.Diff.String())
-		for _, value1 := range value.Id {
-			fmt.Printf("Id: %s\n", value1)
+		for _, value1 := range value.ID {
+			fmt.Printf("ID: %s\n", value1)
 		}
 	}
 }
