@@ -35,15 +35,13 @@ var updateMediaCmd = &cobra.Command{
 	Short: "Synchronize Media Data from track GPX",
 	Long:  `Using a gpx track, analyze a directory with images or movies and add the GPS positions`,
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(args) == 1 {
 			mediaDir = args[0]
 		}
 		MExecute()
 	},
 }
-
-// crear una variable para añadir la posicion gps a los ficheros usando como indice el nombre de fichero
 
 func init() {
 	rootCmd.AddCommand(updateMediaCmd)

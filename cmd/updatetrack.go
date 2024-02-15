@@ -15,7 +15,7 @@ var updateTrackCmd = &cobra.Command{
 	Use:   "updatetrack",
 	Short: "Update GPX files",
 	Long:  `Updates the name and date of the GPX files using the initial position of the track`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(args) == 1 {
 			mediaDir = args[0]
 		}
