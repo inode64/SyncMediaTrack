@@ -181,13 +181,13 @@ func WriteGPS(gps Trkpt, filename string) error {
 		return fileInfo.Err
 	}
 
-	latRef := "N"
+	latRef := "South"
 	if gps.Lat >= 0 {
-		latRef = "S"
+		latRef = "North"
 	}
-	lonRef := "E"
+	lonRef := "West"
 	if gps.Lon >= 0 {
-		lonRef = "W"
+		lonRef = "East"
 	}
 
 	gpsTime, err := time.Parse("2006-01-02T15:04:05Z", gps.Time)
