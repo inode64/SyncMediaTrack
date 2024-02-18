@@ -42,15 +42,7 @@ func init() {
 	DataGPX = make(map[string]Gpx)
 }
 
-func ReadGPX(filename string, valid bool) {
-	mtype, err := mimetype.DetectFile(filename)
-	if err != nil {
-		log.Fatal(ColorRed(err))
-	}
-
-	if !mtype.Is("application/gpx+xml") && !mtype.Is("text/xml") {
-		return
-	}
+func ReadGPX(filename string, valid bool) error {
 
 	fmt.Printf("Reading: %v \n", filename)
 
@@ -64,8 +56,7 @@ func ReadGPX(filename string, valid bool) {
 	gpx := Gpx{}
 	decoder := xml.NewDecoder(file)
 	if err := decoder.Decode(&gpx); err != nil {
-		fmt.Println(ColorYellow("Warning: GPX file could not be processed, error: ", ColorRed(err)))
-		return
+		return fmt.Errorf(ColorYellow("Warning: GPX file could not be processed, error: ", ColorRed(err)))
 	}
 
 	var oldtrkptTime time.Time
@@ -85,10 +76,11 @@ func ReadGPX(filename string, valid bool) {
 
 		if num > 0 && trkptTime.Before(oldtrkptTime) {
 			if !stopshow {
-				trackError++
-				Warning("Warning: GPX file has time stamps out of order.")
 				if valid {
-					return
+					trackError++
+					return fmt.Errorf("Warning: GPX file has time stamps out of order")
+				} else {
+					Warning("Warning: GPX file has time stamps out of order.")
 				}
 			}
 			stopshow = true
@@ -102,10 +94,12 @@ func ReadGPX(filename string, valid bool) {
 			}
 
 			if distance > 500 && duration.Seconds() < 30 {
-				fmt.Printf(ColorRed("Distance: %v lat1: %f lon1: %f, lat2: %f lon2:%f sec %f \n"), distance, oldlat, oldlon, trkpt.Lat, trkpt.Lon, duration.Seconds())
+				if Verbose {
+					fmt.Printf(ColorRed("Distance: %v lat1: %f lon1: %f, lat2: %f lon2:%f sec %f \n"), distance, oldlat, oldlon, trkpt.Lat, trkpt.Lon, duration.Seconds())
+				}
 
 				trackError++
-				Warning("Warning: GPX file has a distance between points greater than 500 meters.")
+				return fmt.Errorf("Warning: GPX file has a distance between points greater than 500 meters")
 			}
 		}
 
@@ -126,12 +120,12 @@ func ReadGPX(filename string, valid bool) {
 		}
 
 		DataGPX[filename] = gpx
-		return
+		return nil
 	}
 
 	trackError++
 
-	fmt.Println(ColorYellow("Warning: GPX file does not have time stamps."))
+	return fmt.Errorf("Warning: GPX file does not have time stamps")
 }
 
 func ReadGPXDir(trackDir string, valid bool) {
@@ -141,7 +135,19 @@ func ReadGPXDir(trackDir string, valid bool) {
 				return nil // do not remove directory that was provided top-level directory
 			}
 
-			ReadGPX(path, valid)
+			mtype, err := mimetype.DetectFile(path)
+			if err != nil {
+				log.Fatal(ColorRed(err))
+			}
+
+			if !mtype.Is("application/gpx+xml") && !mtype.Is("text/xml") {
+				return nil
+			}
+
+			err = ReadGPX(path, valid)
+			if err != nil {
+				Warning(err.Error())
+			}
 
 			return nil
 		},
@@ -195,7 +201,10 @@ func ReadTracks(track string, valid bool) {
 	if fileInfo.IsDir() {
 		ReadGPXDir(track, valid)
 	} else {
-		ReadGPX(track, valid)
+		err = ReadGPX(track, valid)
+		if err != nil {
+			Warning(err.Error())
+		}
 	}
 
 	if len(DataGPX) == 0 {
