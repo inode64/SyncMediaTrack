@@ -43,7 +43,6 @@ func init() {
 }
 
 func ReadGPX(filename string, valid bool) error {
-
 	fmt.Printf("Reading: %v \n", filename)
 
 	file, err := os.Open(filename)
